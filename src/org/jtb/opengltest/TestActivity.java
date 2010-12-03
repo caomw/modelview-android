@@ -38,8 +38,8 @@ public class TestActivity extends Activity implements OnClickListener,
 			activity.surfaceView
 					.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 
-			activity.renderer.mesh.dySpeed = velocityX / 2000;
-			activity.renderer.mesh.dxSpeed = velocityY / 2000;
+			activity.renderer.mesh.dySpeed = velocityX / 1000;
+			activity.renderer.mesh.dxSpeed = velocityY / 1000;
 
 			return super.onFling(e1, e2, velocityX, velocityY);
 		}

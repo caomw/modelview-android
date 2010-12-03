@@ -53,9 +53,9 @@ public class Mesh {
 			gl.glColorPointer(4, GL10.GL_FLOAT, 0, colorBuffer);
 		}
 
-		gl.glCullFace(GL10.GL_FRONT);
-		gl.glDrawElements(GL10.GL_TRIANGLES, numOfIndices,
-				GL10.GL_UNSIGNED_SHORT, indicesBuffer);
+		//gl.glCullFace(GL10.GL_FRONT);
+		//gl.glDrawElements(GL10.GL_TRIANGLES, numOfIndices,
+		//		GL10.GL_UNSIGNED_SHORT, indicesBuffer);
 		gl.glCullFace(GL10.GL_BACK);
 		gl.glDrawElements(GL10.GL_TRIANGLES, numOfIndices,
 				GL10.GL_UNSIGNED_SHORT, indicesBuffer);
@@ -64,7 +64,7 @@ public class Mesh {
 		gl.glDisableClientState(GL10.GL_NORMAL_ARRAY);
 		gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
 		gl.glDisable(GL10.GL_CULL_FACE);
-		gl.glDisable(GL10.GL_BLEND);
+		//gl.glDisable(GL10.GL_BLEND);
 	}
 
 	protected void setTriangles(List<Triangle> tris) {
