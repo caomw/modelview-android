@@ -11,6 +11,7 @@ import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
 import android.util.Log;
+import static org.jtb.opengltest.Vertex.*;
 
 class OffReader extends ModelReader {
 	OffReader(InputStream is) throws IOException {
@@ -62,22 +63,22 @@ class OffReader extends ModelReader {
 				if (lc < vertexCount) {
 					// reading vertices
 					float x = Float.parseFloat(tok.nextToken());
-					if (x > max.x) {
-						max.x = x;
-					} else if (x < min.x) {
-						min.x = x;
+					if (x > max.vertex[X]) {
+						max.vertex[X] = x;
+					} else if (x < min.vertex[X]) {
+						min.vertex[X] = x;
 					}
 					float y = Float.parseFloat(tok.nextToken());
-					if (y > max.y) {
-						max.y = y;
-					} else if (y < min.y) {
-						min.y = y;
+					if (y > max.vertex[Y]) {
+						max.vertex[Y] = y;
+					} else if (y < min.vertex[Y]) {
+						min.vertex[Y] = y;
 					}
 					float z = Float.parseFloat(tok.nextToken());
-					if (z > max.z) {
-						max.z = z;
-					} else if (z < min.z) {
-						min.z = z;
+					if (z > max.vertex[Z]) {
+						max.vertex[Z] = z;
+					} else if (z < min.vertex[Z]) {
+						min.vertex[Z] = z;
 					}
 
 					Color color = Color.GRAY;
@@ -153,9 +154,9 @@ class OffReader extends ModelReader {
 			throw e;
 		}
 
-		mid.x = (min.x + max.x) / 2;
-		mid.y = (min.y + max.y) / 2;
-		mid.z = (min.z + max.z) / 2;
+		mid.vertex[X] = (min.vertex[X] + max.vertex[X]) / 2;
+		mid.vertex[Y] = (min.vertex[Y] + max.vertex[Y]) / 2;
+		mid.vertex[Z] = (min.vertex[Z] + max.vertex[Z]) / 2;
 
 		getMesh().radius = Triangle.boundingRadius(triangles, min, max);
 		getMesh().setTriangles(triangles);

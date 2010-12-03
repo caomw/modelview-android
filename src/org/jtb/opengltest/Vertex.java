@@ -1,44 +1,51 @@
 package org.jtb.opengltest;
 
 public class Vertex {
-	float x, y, z;
+	static final int X = 0;
+	static final int Y = 1;
+	static final int Z = 2;
+
+	float[] vertex = new float[3];
+
 	Color color = Color.WHITE;
 
-	public Vertex() {	
+	Vertex() {
 	}
-	
-	public Vertex(Color color, float x, float y, float z) {
+
+	Vertex(Color color, float x, float y, float z) {
 		this(x, y, z);
 		this.color = color;
 	}
 
-	public Vertex(float x, float y, float z) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
+	Vertex(float x, float y, float z) {
+		vertex[X] = x;
+		vertex[Y] = y;
+		vertex[Z] = z;
 	}
 
-	public Vertex sub(Vertex other) {
-		Vertex r = new Vertex(this.x - other.x, this.y - other.y, this.z
-				- other.z);
+	Vertex sub(Vertex other) {
+		Vertex r = new Vertex(vertex[X] - other.vertex[X], this.vertex[Y]
+				- other.vertex[Y], this.vertex[Z] - other.vertex[Z]);
 		return r;
 	}
 
-	public Vertex cross(Vertex other) {
-		Vertex r = new Vertex(this.y * other.z - this.z * other.y, -(this.x
-				* other.z - this.z * other.x), this.x * other.y - this.y
-				* other.x);
+	Vertex cross(Vertex other) {
+		Vertex r = new Vertex(this.vertex[Y] * other.vertex[Z] - this.vertex[Z]
+				* other.vertex[Y],
+				-(this.vertex[X] * other.vertex[Z] - this.vertex[Z]
+						* other.vertex[X]), this.vertex[X] * other.vertex[Y]
+						- this.vertex[Y] * other.vertex[X]);
 		return r;
 	}
 
-	public float[] toFloatArray() {
-		return new float[] { x, y, z };
+	public float[] getCoordinates() {
+		return vertex;
 	}
 
 	float distance(Vertex other) {
-		float xd = this.x - other.x;
-		float yd = this.y - other.y;
-		float zd = this.z - other.z;
+		float xd = this.vertex[X] - other.vertex[X];
+		float yd = this.vertex[Y] - other.vertex[Y];
+		float zd = this.vertex[Z] - other.vertex[Z];
 		float d = (float) Math.sqrt(xd * xd + yd * yd + zd * zd);
 		return d;
 	}

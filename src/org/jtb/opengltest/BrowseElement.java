@@ -17,6 +17,7 @@ abstract class BrowseElement implements Serializable, Comparable<BrowseElement> 
 	private static final Set<String> VALID_EXTENSIONS = new HashSet<String>() {
 		{
 			add(".off");
+			add(".obj");
 		}
 	};
 
@@ -45,6 +46,9 @@ abstract class BrowseElement implements Serializable, Comparable<BrowseElement> 
 	ModelReader getModelReader() throws IOException {
 		if (getPath().endsWith(".off")) {
 			return new OffReader(getInputStream());
+		}
+		if (getPath().endsWith(".obj")) {
+			return new ObjReader(getInputStream());
 		}
 		throw new UnsupportedOperationException("cannot read file: "
 				+ getPath());

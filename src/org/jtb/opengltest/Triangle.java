@@ -1,44 +1,57 @@
 package org.jtb.opengltest;
 
+import static org.jtb.opengltest.Vertex.X;
+import static org.jtb.opengltest.Vertex.Y;
+import static org.jtb.opengltest.Vertex.Z;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import android.util.Log;
-
 public class Triangle {
-	Vertex v1, v2, v3;
+	static final int V1 = 0;
+	static final int V2 = 1;
+	static final int V3 = 2;
+
+	Vertex[] vertices = new Vertex[3];
+
+	private Vertex normal = null;
+
+	Triangle(Color color, Vertex v1, Vertex v2, Vertex v3, Vertex normal) {
+		this(color, v1, v2, v3);
+		this.normal = normal;
+	}
 
 	Triangle(Color color, Vertex v1, Vertex v2, Vertex v3) {
 		this(v1, v2, v3);
-		this.v1.color = color;
-		this.v2.color = color;
-		this.v3.color = color;
+		this.vertices[V1].color = color;
+		this.vertices[V2].color = color;
+		this.vertices[V3].color = color;
 	}
 
 	Triangle(Vertex v1, Vertex v2, Vertex v3) {
-		this.v1 = v1;
-		this.v2 = v2;
-		this.v3 = v3;
+		this.vertices[V1] = v1;
+		this.vertices[V2] = v2;
+		this.vertices[V3] = v3;
 	}
 
 	Triangle reverse() {
-		return new Triangle(v1, v3, v2);
+		return new Triangle(vertices[V1], vertices[V3], vertices[V2]);
 	}
 
 	public float[] toFloatArray() {
 		float[] floats = new float[3 * 3];
-		System.arraycopy(v1.toFloatArray(), 0, floats, 0 * 3, 3);
-		System.arraycopy(v2.toFloatArray(), 0, floats, 1 * 3, 3);
-		System.arraycopy(v3.toFloatArray(), 0, floats, 2 * 3, 3);
+		System.arraycopy(vertices[V1].vertex, 0, floats, 0 * 3, 3);
+		System.arraycopy(vertices[V2].vertex, 0, floats, 1 * 3, 3);
+		System.arraycopy(vertices[V3].vertex, 0, floats, 2 * 3, 3);
 
 		return floats;
 	}
 
 	public float[] colorArray() {
 		float[] floats = new float[3 * 4];
-		System.arraycopy(v1.color.toFloatArray(), 0, floats, 0 * 4, 4);
-		System.arraycopy(v2.color.toFloatArray(), 0, floats, 1 * 4, 4);
-		System.arraycopy(v3.color.toFloatArray(), 0, floats, 2 * 4, 4);
+		System.arraycopy(vertices[V1].color.rgba, 0, floats, 0 * 4, 4);
+		System.arraycopy(vertices[V2].color.rgba, 0, floats, 1 * 4, 4);
+		System.arraycopy(vertices[V3].color.rgba, 0, floats, 2 * 4, 4);
 
 		return floats;
 	}
@@ -47,9 +60,9 @@ public class Triangle {
 	List<Vertex> verticesAsList() {
 		return new ArrayList<Vertex>() {
 			{
-				add(v1);
-				add(v2);
-				add(v3);
+				add(vertices[V1]);
+				add(vertices[V2]);
+				add(vertices[V3]);
 			}
 		};
 	}
@@ -57,33 +70,35 @@ public class Triangle {
 	public static float[] toFloatArray(Triangle[] tris) {
 		float[] floats = new float[tris.length * 3 * 3];
 		for (int i = 0; i < tris.length; i++) {
-			System.arraycopy(tris[i].toFloatArray(), 0, floats, i * 3 * 3,
-					3 * 3);
+			// 3 * 3 = 9 = vertices x 3 points
+			System.arraycopy(tris[i].toFloatArray(), 0, floats, i * 9, 9);
 		}
 		return floats;
 	}
 
 	public Vertex normal() {
-		Vertex u = v2.sub(v1);
-		Vertex v = v3.sub(v1);
-		Vertex n = u.cross(v);
+		if (normal == null) {
+			Vertex u = vertices[V2].sub(vertices[V1]);
+			Vertex v = vertices[V3].sub(vertices[V1]);
+			normal = u.cross(v);
 
-		// normalize
-		double factor = Math.sqrt(Math.pow(n.x, 2) + Math.pow(n.y, 2)
-				+ Math.pow(n.z, 2));
-		n.x /= factor;
-		n.y /= factor;
-		n.z /= factor;
+			// normalize
+			double factor = Math.sqrt(Math.pow(normal.vertex[X], 2)
+					+ Math.pow(normal.vertex[Y], 2)
+					+ Math.pow(normal.vertex[Z], 2));
+			normal.vertex[X] /= factor;
+			normal.vertex[Y] /= factor;
+			normal.vertex[Z] /= factor;
+		}
 
-		return n;
+		return normal;
 	}
 
 	public float[] normalArray() {
 		Vertex n = normal();
-		float[] a = n.toFloatArray();
 		float[] na = new float[9];
 		for (int i = 0; i < 3; i++) {
-			System.arraycopy(a, 0, na, i * 3, 3);
+			System.arraycopy(n.vertex, 0, na, i * 3, 3);
 		}
 
 		return na;
@@ -123,15 +138,16 @@ public class Triangle {
 
 		for (Triangle t : tris) {
 			for (Vertex v : t.verticesAsList()) {
-				v.x -= midX;
-				v.y -= midY;
+				v.vertex[X] -= midX;
+				v.vertex[Y] -= midY;
 			}
 		}
 	}
 
 	static float boundingRadius(List<Triangle> tris, Vertex min, Vertex max) {
-		Vertex c = new Vertex((min.x + max.x) / 2, (min.y + max.y) / 2,
-				(min.z + max.z) / 2);
+		Vertex c = new Vertex((min.vertex[X] + max.vertex[X]) / 2,
+				(min.vertex[Y] + max.vertex[Y]) / 2,
+				(min.vertex[Z] + max.vertex[Z]) / 2);
 		float radius = 0f;
 		for (Triangle t : tris) {
 			for (Vertex v : t.verticesAsList()) {
