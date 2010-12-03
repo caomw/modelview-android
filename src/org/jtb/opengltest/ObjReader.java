@@ -14,15 +14,19 @@ import java.util.regex.Pattern;
 
 import static org.jtb.opengltest.Vertex.*;
 
+import android.content.Context;
+import android.os.Handler;
 import android.util.Log;
 
 class ObjReader extends ModelReader {
 	private static final Pattern FACE_ELEMENT_PATTERN = Pattern
 			.compile("(\\d+)(?:/(\\d*))?(?:/(\\d*))?");
 
-	ObjReader(InputStream is) throws IOException {
-		super();
-
+	ObjReader(Context context) {
+		super(context);
+	}
+	
+	Mesh readMesh(InputStream is) throws ModelLoadException {
 		List<Triangle> triangles = new ArrayList<Triangle>();
 		List<Vertex> vertices = new ArrayList<Vertex>();
 		List<Vertex> normals = new ArrayList<Vertex>();
@@ -35,8 +39,10 @@ class ObjReader extends ModelReader {
 		BufferedReader br = new BufferedReader(r);
 
 		String line = null;
+		int lineNumber = 0;
 		try {
 			while ((line = br.readLine()) != null) {
+				lineNumber++;
 				line = line.trim();
 				// skip blank lines
 				if (line.length() == 0) {
@@ -118,25 +124,29 @@ class ObjReader extends ModelReader {
 					}					
 				}
 			}
-		} catch (IndexOutOfBoundsException e) {
-			Log.e("opengl-test", "could not parse line: " + line);
-			throw e;
-		} catch (NoSuchElementException e) {
-			Log.e("opengl-test", "could not parse line: " + line);
-			throw e;
-		} catch (NumberFormatException e) {
-			Log.e("opengl-test", "could not parse line: " + line);
-			throw e;
+		} catch (Exception e) {
+			ModelLoadException mle = new ModelLoadException();
+			mle.setLineNumber(lineNumber);
+			mle.setLine(line);
+			throw mle;
+		} finally {
+			try {
+				is.close();
+			} catch (IOException e) {
+			}
 		}
 
 		mid.vertex[X] = (min.vertex[X] + max.vertex[X]) / 2;
 		mid.vertex[Y] = (min.vertex[Y] + max.vertex[Y]) / 2;
 		mid.vertex[Z] = (min.vertex[Z] + max.vertex[Z]) / 2;
 
-		getMesh().radius = Triangle.boundingRadius(triangles, min, max);
-		getMesh().setTriangles(triangles);
-		getMesh().max = max;
-		getMesh().min = min;
-		getMesh().mid = mid;
+		Mesh mesh = new Mesh();
+		mesh.radius = Triangle.boundingRadius(triangles, min, max);
+		mesh.setTriangles(triangles);
+		mesh.max = max;
+		mesh.min = min;
+		mesh.mid = mid;
+		
+		return mesh;
 	}
 }

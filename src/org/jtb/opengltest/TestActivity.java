@@ -1,8 +1,15 @@
 package org.jtb.opengltest;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
@@ -13,11 +20,48 @@ import android.view.WindowManager;
 
 public class TestActivity extends Activity implements OnClickListener,
 		View.OnTouchListener {
+
+	static final int LOADING_DIALOG = 0;
+	static final int LOAD_ERROR_DIALOG = 1;
+
+	private ProgressDialog loadingDialog;
+	private AlertDialog loadErrorDialog;
+
+	static final int SHOW_LOADING_WHAT = 0;
+	static final int SHOW_LOAD_ERROR_WHAT = 1;
+	static final int HIDE_LOADING_WHAT = 2;
+	static final int HIDE_LOAD_ERROR_WHAT = 3;
+	static final int PREPARE_SURFACE_WHAT = 4;
+
+	private Handler handler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case SHOW_LOADING_WHAT:
+				showDialog(LOADING_DIALOG);
+				break;
+			case SHOW_LOAD_ERROR_WHAT:
+				showDialog(LOAD_ERROR_DIALOG);
+				break;
+			case HIDE_LOADING_WHAT:
+				dismissDialog(LOADING_DIALOG);
+				break;
+			case HIDE_LOAD_ERROR_WHAT:
+				dismissDialog(LOAD_ERROR_DIALOG);
+				break;
+			case PREPARE_SURFACE_WHAT:
+				prepareSurface();
+				break;
+			}
+		}
+	};
+
 	private GestureDetector gestureDetector;
 	private View.OnTouchListener gestureListener;
 	private float lastX, lastY;
 	private MeshRenderer renderer;
 	private GLSurfaceView surfaceView;
+	private ModelLoadException loadException = null;
 
 	private static class TestGestureDetector extends SimpleOnGestureListener {
 		private static final int SWIPE_MIN_DISTANCE = 120;
@@ -55,9 +99,6 @@ public class TestActivity extends Activity implements OnClickListener,
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN); // (NEW)
 
-		surfaceView = new GLSurfaceView(this);
-		surfaceView.setSoundEffectsEnabled(false);
-		
 		BrowseElement browseElement = savedInstanceState != null ? (BrowseElement) savedInstanceState
 				.get("browseElement") : null;
 		if (browseElement == null) {
@@ -69,11 +110,6 @@ public class TestActivity extends Activity implements OnClickListener,
 			return; // error
 		}
 		browseElement.setContext(this);
-
-		renderer = new MeshRenderer(this, surfaceView, browseElement);
-		surfaceView.setRenderer(renderer);
-		surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-		setContentView(surfaceView);
 
 		// Gesture detection
 		gestureDetector = new GestureDetector(new TestGestureDetector(this,
@@ -87,15 +123,52 @@ public class TestActivity extends Activity implements OnClickListener,
 			}
 		};
 
+		final BrowseElement be = browseElement;
+		showDialog(LOADING_DIALOG);
+		new Thread(new Runnable() {
+			public void run() {
+				try {
+					renderer = new MeshRenderer(TestActivity.this, be);
+					handler.sendEmptyMessage(PREPARE_SURFACE_WHAT);
+				} catch (ModelLoadException e) {
+					setLoadException(e);
+					handler.sendEmptyMessage(SHOW_LOAD_ERROR_WHAT);
+				} finally {
+					handler.sendEmptyMessage(HIDE_LOADING_WHAT);
+				}
+
+			}
+		}).start();
+	}
+
+	private void setLoadException(ModelLoadException e) {
+		loadException = e;
+	}
+
+	void setRenderMode(int mode) {
+		surfaceView.setRenderMode(mode);
+	}
+
+	private void prepareSurface() {
+		surfaceView = new GLSurfaceView(this);
+		setContentView(surfaceView);
+		surfaceView.setSoundEffectsEnabled(false);
+		surfaceView.setRenderer(renderer);
+		surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 		surfaceView.setOnClickListener(this);
 		surfaceView.setOnTouchListener(this);
 
+		surfaceView.requestRender();
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
-		surfaceView.requestRender();
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
 	}
 
 	/*
@@ -151,6 +224,38 @@ public class TestActivity extends Activity implements OnClickListener,
 
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
-		
+
+	}
+
+	protected Dialog onCreateDialog(int id) {
+		switch (id) {
+		case LOADING_DIALOG:
+			if (loadingDialog == null) {
+				loadingDialog = new ProgressDialog(this);
+				loadingDialog.setMessage("Loading ...");
+				// loadingDialog.setIndeterminate(true);
+			}
+			return loadingDialog;
+		case LOAD_ERROR_DIALOG:
+			if (loadErrorDialog == null) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(this);
+				builder.setTitle("Error Loading");
+				builder.setIcon(android.R.drawable.ic_dialog_alert);
+				builder.setMessage(loadException.getMessage());
+				builder.setNeutralButton("Back",
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int which) {
+								dismissDialog(LOAD_ERROR_DIALOG);
+								finish();
+							}
+						});
+
+				loadErrorDialog = builder.create();
+			}
+			Log.e("modelview", "load error", loadException);
+			return loadErrorDialog;
+		}
+		return null;
 	}
 }

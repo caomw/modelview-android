@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
+import android.content.res.AssetFileDescriptor;
+import android.os.Handler;
 
 public class AssetBrowseElement extends BrowseElement {
 	private static final long serialVersionUID = 1L;
@@ -15,23 +17,21 @@ public class AssetBrowseElement extends BrowseElement {
 	}
 
 	protected InputStream getInputStream() throws IOException {
-		InputStream is = getContext().getResources().getAssets()
-				.open(getPath());
+		InputStream is = context.getResources().getAssets().open(getPath());
 		return is;
 	}
 
 	@Override
 	List<BrowseElement> getChildren() throws IOException {
-		String[] assets = getContext().getResources().getAssets()
-				.list(getPath());
+		String[] assets = context.getResources().getAssets().list(getPath());
 		List<BrowseElement> bes = new ArrayList<BrowseElement>();
 		for (String asset : assets) {
 			// try to list only directories or .off files
 			// assets don't give a real way to distinguish between
-			// files and dirs 
+			// files and dirs
 			if (!asset.contains(".") || isUnderstood(asset)) {
-				BrowseElement be = new AssetBrowseElement(getContext(),
-						getPath() + "/" + asset);
+				BrowseElement be = new AssetBrowseElement(context, getPath()
+						+ "/" + asset);
 				bes.add(be);
 			}
 		}
@@ -44,5 +44,11 @@ public class AssetBrowseElement extends BrowseElement {
 		// we control this structure, so it's probably okay
 		// to make such assumptions
 		return !isUnderstood(getPath());
+	}
+
+	@Override
+	long getSize() throws IOException {
+		AssetFileDescriptor afd = context.getAssets().openFd(getPath());
+		return afd.getDeclaredLength();
 	}
 }

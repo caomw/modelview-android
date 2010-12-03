@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
+import android.os.Handler;
 
 public class AggregateBrowseElement extends BrowseElement {
 	private static final long serialVersionUID = 1L;
@@ -37,6 +38,11 @@ public class AggregateBrowseElement extends BrowseElement {
 	@Override
 	String toPathString() {
 		return "/";
+	}
+
+	@Override
+	long getSize() throws IOException {
+		throw new UnsupportedOperationException("cannnot get size of aggregate browse element");
 	}
 
 }

@@ -7,30 +7,25 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import android.content.Context;
+import android.content.Intent;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLSurfaceView.Renderer;
 import android.opengl.GLU;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import static org.jtb.opengltest.Vertex.*;
 
 public class MeshRenderer implements Renderer {
 	public Mesh mesh;
 
-	private Context context;
-	private GLSurfaceView surfaceView;
+	private TestActivity activity;
 	private long lastMillis;
 
-	public MeshRenderer(Context context, GLSurfaceView surfaceView, BrowseElement browseElement) {
-		this.context = context;
-		this.surfaceView = surfaceView;
-
-		ModelReader reader;
-		try {
-			reader = browseElement.getModelReader();
-			mesh = reader.getMesh();
-		} catch (IOException e) {
-			Log.e("opengl-test", "could not read model", e);
-		}
+	public MeshRenderer(TestActivity activity, BrowseElement browseElement)
+			throws ModelLoadException {
+		this.activity = activity;
+		mesh = browseElement.getMesh();
 	}
 
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -63,7 +58,8 @@ public class MeshRenderer implements Renderer {
 		gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_SPECULAR, matSpecular,
 				0);
 
-		float lightPosition[] = { mesh.mid.vertex[X], mesh.mid.vertex[Y], 100f, 1f };
+		float lightPosition[] = { mesh.mid.vertex[X], mesh.mid.vertex[Y], 100f,
+				1f };
 		float lightDirection[] = { 0f, 0f, 1f };
 
 		gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_POSITION, lightPosition, 0);
@@ -79,10 +75,12 @@ public class MeshRenderer implements Renderer {
 		GLU.gluLookAt(gl, 0f, 0f, 2f * mesh.radius, 0f, 0f, 0f, 0f, 1f, 0f);
 
 		gl.glPushMatrix();
-		gl.glTranslatef(mesh.mid.vertex[X], mesh.mid.vertex[Y], mesh.mid.vertex[Z]);
+		gl.glTranslatef(mesh.mid.vertex[X], mesh.mid.vertex[Y],
+				mesh.mid.vertex[Z]);
 		gl.glRotatef(mesh.rx + mesh.dx, 1, 0, 0);
 		gl.glRotatef(mesh.ry + mesh.dy, 0, 1, 0);
-		gl.glTranslatef(-mesh.mid.vertex[X], -mesh.mid.vertex[Y], -mesh.mid.vertex[Z]);
+		gl.glTranslatef(-mesh.mid.vertex[X], -mesh.mid.vertex[Y],
+				-mesh.mid.vertex[Z]);
 		mesh.draw(gl);
 		gl.glPopMatrix();
 
@@ -90,15 +88,25 @@ public class MeshRenderer implements Renderer {
 		long currentMillis = System.currentTimeMillis();
 		if (lastMillis != 0) {
 			long delta = currentMillis - lastMillis;
-				mesh.dx += mesh.dxSpeed * delta;
-				mesh.dy += mesh.dySpeed * delta;
-				mesh.dampenSpeed(delta);
-		}		
-		lastMillis = currentMillis;
-		
-		if (!mesh.isMoving()) {
-			surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+			mesh.dx += mesh.dxSpeed * delta;
+			mesh.dy += mesh.dySpeed * delta;
+			mesh.dampenSpeed(delta);
 		}
+		lastMillis = currentMillis;
+
+		if (!isMoving()) {
+			activity.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+		}
+	}
+
+	boolean isMoving() {
+		if (mesh.dxSpeed != 0.0f) {
+			return true;
+		}
+		if (mesh.dySpeed != 0.0f) {
+			return true;
+		}
+		return false;
 	}
 
 	public void onSurfaceChanged(GL10 gl, int width, int height) {

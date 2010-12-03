@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import android.content.Context;
+import android.os.Handler;
 
 abstract class BrowseElement implements Serializable, Comparable<BrowseElement> {
 	private static final long serialVersionUID = 1L;
@@ -21,11 +22,11 @@ abstract class BrowseElement implements Serializable, Comparable<BrowseElement> 
 		}
 	};
 
-	private transient Context context;
-	private String path;
+	protected transient Context context;
+	protected String path;
 
 	BrowseElement(Context context, String path) {
-		this.setContext(context);
+		this.context = context;
 		this.path = path;
 	}
 
@@ -37,22 +38,33 @@ abstract class BrowseElement implements Serializable, Comparable<BrowseElement> 
 		}
 		return false;
 	}
+
 	String getPath() {
 		return path;
 	}
 
 	protected abstract InputStream getInputStream() throws IOException;
 
-	ModelReader getModelReader() throws IOException {
-		if (getPath().endsWith(".off")) {
-			return new OffReader(getInputStream());
+	Mesh getMesh() throws ModelLoadException {
+		try {
+			if (getPath().endsWith(".off")) {
+				return new OffReader(context).readMesh(getInputStream());
+			}
+			if (getPath().endsWith(".obj")) {
+				return new ObjReader(context).readMesh(getInputStream());
+			}
+			throw new ModelLoadException();
+		} catch (IOException ioe) {
+			ModelLoadException mle = new ModelLoadException(ioe);
+			mle.setPath(toPathString());
+			throw mle;
+		} catch (ModelLoadException mle) {
+			mle.setPath(toPathString());
+			throw mle;
 		}
-		if (getPath().endsWith(".obj")) {
-			return new ObjReader(getInputStream());
-		}
-		throw new UnsupportedOperationException("cannot read file: "
-				+ getPath());
 	}
+
+	abstract long getSize() throws IOException;
 
 	abstract List<BrowseElement> getChildren() throws IOException;
 
@@ -60,7 +72,8 @@ abstract class BrowseElement implements Serializable, Comparable<BrowseElement> 
 
 	String toPathString() {
 		int i = getPath().indexOf("modelview-data");
-		return getPath().substring(i + "modelview-data".length(), getPath().length());
+		return getPath().substring(i + "modelview-data".length(),
+				getPath().length());
 	}
 
 	@Override
@@ -70,10 +83,6 @@ abstract class BrowseElement implements Serializable, Comparable<BrowseElement> 
 
 	void setContext(Context context) {
 		this.context = context;
-	}
-
-	Context getContext() {
-		return context;
 	}
 
 	public int compareTo(BrowseElement other) {

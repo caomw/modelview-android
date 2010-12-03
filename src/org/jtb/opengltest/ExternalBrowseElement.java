@@ -9,13 +9,15 @@ import java.util.Collections;
 import java.util.List;
 
 import android.content.Context;
+import android.os.Handler;
 
 public class ExternalBrowseElement extends BrowseElement {
 	private static final long serialVersionUID = 1L;
+	private File filePath;
 
 	ExternalBrowseElement(Context context, String path) {
 		super(context, path);
-		// TODO Auto-generated constructor stub
+		filePath = new File(path);
 	}
 
 	protected InputStream getInputStream() throws IOException {
@@ -25,17 +27,16 @@ public class ExternalBrowseElement extends BrowseElement {
 
 	@Override
 	List<BrowseElement> getChildren() throws IOException {
-		File fp = new File(getPath());
-		if (!fp.exists()) {
+		if (!filePath.exists()) {
 			return Collections.emptyList();
 		}
 		List<BrowseElement> bes = new ArrayList<BrowseElement>();
-		String[] files = fp.list();
+		String[] files = filePath.list();
 		for (String fn : files) {
-			File f = new File(fp + "/" + fn);
+			File f = new File(filePath.toString() + "/" + fn);
 			if (f.isDirectory() || isUnderstood(fn)) {
-				BrowseElement be = new ExternalBrowseElement(getContext(),
-						getPath() + "/" + fn);
+				BrowseElement be = new ExternalBrowseElement(context, getPath()
+						+ "/" + fn);
 				bes.add(be);
 			}
 		}
@@ -45,5 +46,10 @@ public class ExternalBrowseElement extends BrowseElement {
 	@Override
 	boolean isDirectory() {
 		return new File(getPath()).isDirectory();
+	}
+
+	@Override
+	long getSize() {
+		return filePath.length();
 	}
 }

@@ -79,7 +79,8 @@ public class BrowseActivity extends ListActivity {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		setTitle(getResources().getString(R.string.app_name) + ": " + browseElement.toPathString());
+
+		setTitle(getResources().getString(R.string.app_name) + ": "
+				+ browseElement.toPathString());
 	}
 }

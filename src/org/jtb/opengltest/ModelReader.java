@@ -1,13 +1,16 @@
 package org.jtb.opengltest;
 
-abstract class ModelReader {
-	private Mesh mesh;
+import java.io.IOException;
+import java.io.InputStream;
 
-	ModelReader() {
-		mesh = new Mesh();
+import android.content.Context;
+
+abstract class ModelReader {
+	protected Context context;
+	
+	ModelReader(Context context) {
+		this.context = context;
 	}
 	
-	Mesh getMesh() {
-		return mesh;
-	}	
+	abstract Mesh readMesh(InputStream is) throws ModelLoadException;
 }

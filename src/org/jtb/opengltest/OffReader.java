@@ -10,13 +10,18 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
+import android.content.Context;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import static org.jtb.opengltest.Vertex.*;
 
 class OffReader extends ModelReader {
-	OffReader(InputStream is) throws IOException {
-		super();
-		
+	OffReader(Context context) {
+		super(context);
+	}
+
+	Mesh readMesh(InputStream is) throws ModelLoadException {
 		List<Triangle> triangles;
 		Vertex min = new Vertex();
 		Vertex max = new Vertex();
@@ -26,13 +31,16 @@ class OffReader extends ModelReader {
 		BufferedReader br = new BufferedReader(r);
 
 		String line = null;
+		int lineNumber = 0;
 		try {
 			// consume until we get the OFF header
 			while (!(line = br.readLine()).contains("OFF")) {
+				lineNumber++;
 			}
 			// consume until we get the counts
 			while ((line = br.readLine()).trim().startsWith("#")
 					|| line.trim().length() == 0) {
+				lineNumber++;
 			}
 
 			StringTokenizer tok = new StringTokenizer(line);
@@ -47,6 +55,7 @@ class OffReader extends ModelReader {
 
 			int lc = 0;
 			while ((line = br.readLine()) != null) {
+				lineNumber++;
 				line = line.trim();
 				if (line.length() == 0) {
 					continue;
@@ -121,47 +130,50 @@ class OffReader extends ModelReader {
 						}
 					}
 					int i = 0;
-					try {
-						for (i = 1; i < nv - 1; i++) {
-							Vertex v1 = vertices.get(indices[0]);
-							Vertex v2 = vertices.get(indices[i]);
-							Vertex v3 = vertices.get(indices[i + 1]);
+					for (i = 1; i < nv - 1; i++) {
+						Vertex v1 = vertices.get(indices[0]);
+						Vertex v2 = vertices.get(indices[i]);
+						Vertex v3 = vertices.get(indices[i + 1]);
 
-							if (color != null) {
-								v1.color = color;
-								v2.color = color;
-								v3.color = color;
-							}
-							Triangle t = new Triangle(v1, v2, v3);
-							triangles.add(t);
-							triangles.add(t.reverse());
+						if (color != null) {
+							v1.color = color;
+							v2.color = color;
+							v3.color = color;
 						}
-					} catch (ArrayIndexOutOfBoundsException e) {
-						Log.e("opengl-test", "could not parse line: " + line + ", i=" + i + ", indices.length=" + indices.length);
-						throw e;
+						Triangle t = new Triangle(v1, v2, v3);
+						triangles.add(t);
+						triangles.add(t.reverse());
 					}
 				}
 				lc++;
 			}
-		} catch (IndexOutOfBoundsException e) {
-			Log.e("opengl-test", "could not parse line: " + line);
-			throw e;
-		} catch (NoSuchElementException e) {
-			Log.e("opengl-test", "could not parse line: " + line);
-			throw e;
-		} catch (NumberFormatException e) {
-			Log.e("opengl-test", "could not parse line: " + line);
-			throw e;
+		} catch (Exception e) {
+			ModelLoadException mle = new ModelLoadException();
+			mle.setLineNumber(lineNumber);
+			mle.setLine(line);
+			throw mle;
+		} finally {
+			try {
+				is.close();
+			} catch (IOException e) {
+			}
 		}
 
+		if (triangles.size() == 0) {
+			throw new ModelLoadException("No triangles read");
+		}
+		
 		mid.vertex[X] = (min.vertex[X] + max.vertex[X]) / 2;
 		mid.vertex[Y] = (min.vertex[Y] + max.vertex[Y]) / 2;
 		mid.vertex[Z] = (min.vertex[Z] + max.vertex[Z]) / 2;
 
-		getMesh().radius = Triangle.boundingRadius(triangles, min, max);
-		getMesh().setTriangles(triangles);
-		getMesh().max = max;
-		getMesh().min = min;
-		getMesh().mid = mid;
+		Mesh mesh = new Mesh();
+		mesh.radius = Triangle.boundingRadius(triangles, min, max);
+		mesh.setTriangles(triangles);
+		mesh.max = max;
+		mesh.min = min;
+		mesh.mid = mid;
+
+		return mesh;
 	}
 }

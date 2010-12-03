@@ -138,16 +138,6 @@ public class Mesh {
 		this.frontFace = frontFace;
 	}
 	
-	boolean isMoving() {
-		if (dxSpeed != 0.0f) {
-			return true;
-		}
-		if (dySpeed != 0.0f) {
-			return true;
-		}
-		return false;
-	}
-	
 	void dampenSpeed(long deltaMillis) {
 		if (dxSpeed != 0.0f) {
 			dxSpeed *= (1.0f - 0.001f * deltaMillis);
