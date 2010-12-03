@@ -93,12 +93,6 @@ public class TestActivity extends Activity implements OnClickListener,
 	}
 
 	@Override
-	public void onClick(View v) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
 	public void onResume() {
 		super.onResume();
 		surfaceView.requestRender();
@@ -128,7 +122,6 @@ public class TestActivity extends Activity implements OnClickListener,
 	 * return false; }
 	 */
 
-	@Override
 	public boolean onTouch(View view, MotionEvent event) {
 		if (gestureDetector.onTouchEvent(event)) {
 			return true;
@@ -154,5 +147,10 @@ public class TestActivity extends Activity implements OnClickListener,
 		}
 
 		return super.onTouchEvent(event);
+	}
+
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		
 	}
 }
