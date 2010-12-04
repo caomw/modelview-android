@@ -1,4 +1,4 @@
-package org.jtb.opengltest;
+package org.jtb.modelview;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,4 +1,4 @@
-package org.jtb.opengltest;
+package org.jtb.modelview;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,7 +12,7 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.jtb.opengltest.Vertex.*;
+import static org.jtb.modelview.Vertex.*;
 
 import android.content.Context;
 import android.os.Handler;
@@ -25,22 +25,23 @@ class ObjReader extends ModelReader {
 	ObjReader(Context context) {
 		super(context);
 	}
-	
+
 	Mesh readMesh(InputStream is) throws ModelLoadException {
-		List<Triangle> triangles = new ArrayList<Triangle>();
-		List<Vertex> vertices = new ArrayList<Vertex>();
-		List<Vertex> normals = new ArrayList<Vertex>();
-
-		Vertex min = new Vertex();
-		Vertex max = new Vertex();
-		Vertex mid = new Vertex();
-
-		Reader r = new InputStreamReader(is);
-		BufferedReader br = new BufferedReader(r);
-
 		String line = null;
 		int lineNumber = 0;
+
 		try {
+			List<Triangle> triangles = new ArrayList<Triangle>();
+			List<Vertex> vertices = new ArrayList<Vertex>();
+			List<Vertex> normals = new ArrayList<Vertex>();
+
+			Vertex min = new Vertex();
+			Vertex max = new Vertex();
+			Vertex mid = new Vertex();
+
+			Reader r = new InputStreamReader(is);
+			BufferedReader br = new BufferedReader(r, BUFFER_SIZE);
+
 			while ((line = br.readLine()) != null) {
 				lineNumber++;
 				line = line.trim();
@@ -50,8 +51,9 @@ class ObjReader extends ModelReader {
 				}
 				// skip comments, and things we do not support
 				// TODO: handle "s" command
-				if (line.startsWith("#") || line.startsWith("o") || line.startsWith("s") 
-						|| line.startsWith("g") || line.startsWith("mtllib")
+				if (line.startsWith("#") || line.startsWith("o")
+						|| line.startsWith("s") || line.startsWith("g")
+						|| line.startsWith("mtllib")
 						|| line.startsWith("usemtl") || line.startsWith("vt")) {
 					continue;
 				}
@@ -64,9 +66,9 @@ class ObjReader extends ModelReader {
 					v.vertex[Y] = Float.parseFloat(tok.nextToken());
 					if (tok.hasMoreTokens()) {
 						v.vertex[Z] = Float.parseFloat(tok.nextToken());
-					}			
+					}
 					vertices.add(v);
-					
+
 					// check for max, min
 					if (v.vertex[X] > max.vertex[X]) {
 						max.vertex[X] = v.vertex[X];
@@ -83,7 +85,7 @@ class ObjReader extends ModelReader {
 					} else if (v.vertex[Z] < min.vertex[Z]) {
 						min.vertex[Z] = v.vertex[Z];
 					}
-					
+
 					continue;
 				}
 				// parse normal
@@ -105,27 +107,39 @@ class ObjReader extends ModelReader {
 					Matcher m = FACE_ELEMENT_PATTERN.matcher(line);
 					List<Vertex> triVertices = new ArrayList<Vertex>();
 					List<Vertex> triNormals = new ArrayList<Vertex>();
-					
+
 					while (m.find()) {
 						int vertexPtr = Integer.parseInt(m.group(1));
-						triVertices.add(vertices.get(vertexPtr-1));
+						triVertices.add(vertices.get(vertexPtr - 1));
 						if (m.group(3) != null) {
 							int normalPtr = Integer.parseInt(m.group(3));
-							triNormals.add(normals.get(normalPtr-1));
+							triNormals.add(normals.get(normalPtr - 1));
 						}
 					}
-					for (int i = 1; i < triVertices.size()-1; i++) {
+					for (int i = 1; i < triVertices.size() - 1; i++) {
 						Vertex v1 = triVertices.get(0);
 						Vertex v2 = triVertices.get(i);
-						Vertex v3 = triVertices.get(i+1);
-					
+						Vertex v3 = triVertices.get(i + 1);
+
 						Triangle t = new Triangle(v1, v2, v3);
 						triangles.add(t);
-					}					
+					}
 				}
 			}
-		} catch (Exception e) {
-			ModelLoadException mle = new ModelLoadException();
+			mid.vertex[X] = (min.vertex[X] + max.vertex[X]) / 2;
+			mid.vertex[Y] = (min.vertex[Y] + max.vertex[Y]) / 2;
+			mid.vertex[Z] = (min.vertex[Z] + max.vertex[Z]) / 2;
+
+			Mesh mesh = new Mesh();
+			mesh.radius = Triangle.boundingRadius(triangles, min, max);
+			mesh.setTriangles(triangles);
+			mesh.max = max;
+			mesh.min = min;
+			mesh.mid = mid;
+
+			return mesh;
+		} catch (Throwable t) {
+			ModelLoadException mle = new ModelLoadException(t);
 			mle.setLineNumber(lineNumber);
 			mle.setLine(line);
 			throw mle;
@@ -136,17 +150,5 @@ class ObjReader extends ModelReader {
 			}
 		}
 
-		mid.vertex[X] = (min.vertex[X] + max.vertex[X]) / 2;
-		mid.vertex[Y] = (min.vertex[Y] + max.vertex[Y]) / 2;
-		mid.vertex[Z] = (min.vertex[Z] + max.vertex[Z]) / 2;
-
-		Mesh mesh = new Mesh();
-		mesh.radius = Triangle.boundingRadius(triangles, min, max);
-		mesh.setTriangles(triangles);
-		mesh.max = max;
-		mesh.min = min;
-		mesh.mid = mid;
-		
-		return mesh;
 	}
 }

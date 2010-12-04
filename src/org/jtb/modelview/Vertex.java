@@ -1,4 +1,4 @@
-package org.jtb.opengltest;
+package org.jtb.modelview;
 
 public class Vertex {
 	static final int X = 0;

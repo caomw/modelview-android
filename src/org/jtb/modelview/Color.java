@@ -1,4 +1,4 @@
-package org.jtb.opengltest;
+package org.jtb.modelview;
 
 class Color {
 	static final float ALPHA = .75f;

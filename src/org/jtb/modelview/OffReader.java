@@ -1,4 +1,4 @@
-package org.jtb.opengltest;
+package org.jtb.modelview;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,7 +14,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import static org.jtb.opengltest.Vertex.*;
+import static org.jtb.modelview.Vertex.*;
 
 class OffReader extends ModelReader {
 	OffReader(Context context) {
@@ -22,17 +22,18 @@ class OffReader extends ModelReader {
 	}
 
 	Mesh readMesh(InputStream is) throws ModelLoadException {
-		List<Triangle> triangles;
-		Vertex min = new Vertex();
-		Vertex max = new Vertex();
-		Vertex mid = new Vertex();
-
-		Reader r = new InputStreamReader(is);
-		BufferedReader br = new BufferedReader(r);
-
 		String line = null;
 		int lineNumber = 0;
+
 		try {
+			List<Triangle> triangles;
+			Vertex min = new Vertex();
+			Vertex max = new Vertex();
+			Vertex mid = new Vertex();
+
+			Reader r = new InputStreamReader(is);
+			BufferedReader br = new BufferedReader(r, BUFFER_SIZE);
+
 			// consume until we get the OFF header
 			while (!(line = br.readLine()).contains("OFF")) {
 				lineNumber++;
@@ -147,8 +148,24 @@ class OffReader extends ModelReader {
 				}
 				lc++;
 			}
-		} catch (Exception e) {
-			ModelLoadException mle = new ModelLoadException();
+			if (triangles.size() == 0) {
+				throw new ModelLoadException("No triangles read");
+			}
+
+			mid.vertex[X] = (min.vertex[X] + max.vertex[X]) / 2;
+			mid.vertex[Y] = (min.vertex[Y] + max.vertex[Y]) / 2;
+			mid.vertex[Z] = (min.vertex[Z] + max.vertex[Z]) / 2;
+
+			Mesh mesh = new Mesh();
+			mesh.radius = Triangle.boundingRadius(triangles, min, max);
+			mesh.setTriangles(triangles);
+			mesh.max = max;
+			mesh.min = min;
+			mesh.mid = mid;
+
+			return mesh;
+		} catch (Throwable t) {
+			ModelLoadException mle = new ModelLoadException(t);
 			mle.setLineNumber(lineNumber);
 			mle.setLine(line);
 			throw mle;
@@ -158,22 +175,5 @@ class OffReader extends ModelReader {
 			} catch (IOException e) {
 			}
 		}
-
-		if (triangles.size() == 0) {
-			throw new ModelLoadException("No triangles read");
-		}
-		
-		mid.vertex[X] = (min.vertex[X] + max.vertex[X]) / 2;
-		mid.vertex[Y] = (min.vertex[Y] + max.vertex[Y]) / 2;
-		mid.vertex[Z] = (min.vertex[Z] + max.vertex[Z]) / 2;
-
-		Mesh mesh = new Mesh();
-		mesh.radius = Triangle.boundingRadius(triangles, min, max);
-		mesh.setTriangles(triangles);
-		mesh.max = max;
-		mesh.min = min;
-		mesh.mid = mid;
-
-		return mesh;
 	}
 }

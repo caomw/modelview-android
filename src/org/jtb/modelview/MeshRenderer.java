@@ -1,4 +1,4 @@
-package org.jtb.opengltest;
+package org.jtb.modelview;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,15 +14,16 @@ import android.opengl.GLU;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import static org.jtb.opengltest.Vertex.*;
+import static org.jtb.modelview.Vertex.*;
 
 public class MeshRenderer implements Renderer {
 	public Mesh mesh;
 
-	private TestActivity activity;
+	private ModelViewActivity activity;
 	private long lastMillis;
-
-	public MeshRenderer(TestActivity activity, BrowseElement browseElement)
+	private float aspect = 0f;
+	
+	public MeshRenderer(ModelViewActivity activity, BrowseElement browseElement)
 			throws ModelLoadException {
 		this.activity = activity;
 		mesh = browseElement.getMesh();
@@ -75,12 +76,10 @@ public class MeshRenderer implements Renderer {
 		GLU.gluLookAt(gl, 0f, 0f, 2f * mesh.radius, 0f, 0f, 0f, 0f, 1f, 0f);
 
 		gl.glPushMatrix();
-		gl.glTranslatef(mesh.mid.vertex[X], mesh.mid.vertex[Y],
-				mesh.mid.vertex[Z]);
+		gl.glTranslatef(mesh.mid.vertex[X], mesh.mid.vertex[Y], mesh.mid.vertex[Z]);
 		gl.glRotatef(mesh.rx + mesh.dx, 1, 0, 0);
 		gl.glRotatef(mesh.ry + mesh.dy, 0, 1, 0);
-		gl.glTranslatef(-mesh.mid.vertex[X], -mesh.mid.vertex[Y],
-				-mesh.mid.vertex[Z]);
+		gl.glTranslatef(-mesh.mid.vertex[X], -mesh.mid.vertex[Y], -mesh.mid.vertex[Z]);
 		mesh.draw(gl);
 		gl.glPopMatrix();
 
@@ -113,17 +112,19 @@ public class MeshRenderer implements Renderer {
 		float zNear = .01f;
 		float zFar = zNear + 4f * mesh.radius; // 2x diameter
 
-		float aspect = (float) width / (float) height;
+		aspect = (float) width / (float) height;
+		
+		float xf = 1f, yf = 1f;
+		if (aspect < 1.0) { // window taller than wide
+			yf = 1/aspect;
+		} else {
+			xf = aspect;
+		}
 
-		float left = mesh.mid.vertex[X] - mesh.radius;
-		float right = mesh.mid.vertex[X] + mesh.radius;
-		float bottom = mesh.mid.vertex[Y] - mesh.radius;
-		float top = mesh.mid.vertex[Y] + mesh.radius;
-
-		/*
-		 * if (aspect < 1.0) { // window taller than wide bottom /= aspect; top
-		 * /= aspect; } else { bottom *= aspect; top *= aspect; }
-		 */
+		float left = mesh.mid.vertex[X] - mesh.radius*xf;
+		float right = mesh.mid.vertex[X] + mesh.radius*xf;
+		float bottom = mesh.mid.vertex[Y] - mesh.radius*yf;
+		float top = mesh.mid.vertex[Y] + mesh.radius*yf;
 
 		gl.glViewport(0, 0, width, height);
 

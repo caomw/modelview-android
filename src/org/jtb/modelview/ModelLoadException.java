@@ -1,4 +1,4 @@
-package org.jtb.opengltest;
+package org.jtb.modelview;
 
 public class ModelLoadException extends Exception {
 	private String path;
@@ -43,10 +43,11 @@ public class ModelLoadException extends Exception {
 
 	@Override
 	public String getMessage() {
+		String msg = "";
 		if (super.getMessage() != null) {
-			return super.getMessage();
+			msg = super.getMessage() + "\n";
 		}
-		String msg = path + "\nLine Number: " + lineNumber + "\nLine: \""
+		msg += path + "\nLine Number: " + lineNumber + "\nLine: \""
 				+ line + "\"";
 		return msg;
 	}

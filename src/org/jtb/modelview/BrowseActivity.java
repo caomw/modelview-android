@@ -1,4 +1,4 @@
-package org.jtb.opengltest;
+package org.jtb.modelview;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,7 +33,7 @@ public class BrowseActivity extends ListActivity {
 				BrowseElement be = browseElementAdapter.getItem(position);
 				Intent i;
 				if (!be.isDirectory()) {
-					i = new Intent(BrowseActivity.this, TestActivity.class);
+					i = new Intent(BrowseActivity.this, ModelViewActivity.class);
 				} else {
 					i = new Intent(BrowseActivity.this, BrowseActivity.class);
 				}

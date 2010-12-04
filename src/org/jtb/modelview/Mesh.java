@@ -1,4 +1,4 @@
-package org.jtb.opengltest;
+package org.jtb.modelview;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

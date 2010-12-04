@@ -1,4 +1,4 @@
-package org.jtb.opengltest;
+package org.jtb.modelview;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -18,7 +18,7 @@ import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.WindowManager;
 
-public class TestActivity extends Activity implements OnClickListener,
+public class ModelViewActivity extends Activity implements OnClickListener,
 		View.OnTouchListener {
 
 	static final int LOADING_DIALOG = 0;
@@ -68,10 +68,10 @@ public class TestActivity extends Activity implements OnClickListener,
 		private static final int SWIPE_MAX_OFF_PATH = 500;
 		private static final int SWIPE_THRESHOLD_VELOCITY = 200;
 
-		private TestActivity activity;
+		private ModelViewActivity activity;
 		private MeshRenderer testRenderer;
 
-		TestGestureDetector(TestActivity activity, MeshRenderer testRenderer) {
+		TestGestureDetector(ModelViewActivity activity, MeshRenderer testRenderer) {
 			this.activity = activity;
 			this.testRenderer = testRenderer;
 		}
@@ -128,7 +128,7 @@ public class TestActivity extends Activity implements OnClickListener,
 		new Thread(new Runnable() {
 			public void run() {
 				try {
-					renderer = new MeshRenderer(TestActivity.this, be);
+					renderer = new MeshRenderer(ModelViewActivity.this, be);
 					handler.sendEmptyMessage(PREPARE_SURFACE_WHAT);
 				} catch (ModelLoadException e) {
 					setLoadException(e);

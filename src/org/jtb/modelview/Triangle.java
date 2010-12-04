@@ -1,8 +1,8 @@
-package org.jtb.opengltest;
+package org.jtb.modelview;
 
-import static org.jtb.opengltest.Vertex.X;
-import static org.jtb.opengltest.Vertex.Y;
-import static org.jtb.opengltest.Vertex.Z;
+import static org.jtb.modelview.Vertex.X;
+import static org.jtb.modelview.Vertex.Y;
+import static org.jtb.modelview.Vertex.Z;
 
 import java.util.ArrayList;
 import java.util.List;
