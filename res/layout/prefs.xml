@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+	<PreferenceCategory android:title="Rendering">
+		<CheckBoxPreference android:title="Back faces?"
+			android:summary="Draw both front and back faces." android:key="backFaces"
+			android:defaultValue="false" />
+	</PreferenceCategory>
+</PreferenceScreen>
+

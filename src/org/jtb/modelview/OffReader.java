@@ -17,8 +17,11 @@ import android.util.Log;
 import static org.jtb.modelview.Vertex.*;
 
 class OffReader extends ModelReader {
+	private Prefs prefs;
+	
 	OffReader(Context context) {
 		super(context);
+		prefs = new Prefs(context);
 	}
 
 	Mesh readMesh(InputStream is) throws ModelLoadException {
@@ -55,6 +58,7 @@ class OffReader extends ModelReader {
 			triangles = new ArrayList<Triangle>();
 
 			int lc = 0;
+			boolean backFaces = prefs.isBackFaces();
 			while ((line = br.readLine()) != null) {
 				lineNumber++;
 				line = line.trim();
@@ -143,7 +147,9 @@ class OffReader extends ModelReader {
 						}
 						Triangle t = new Triangle(v1, v2, v3);
 						triangles.add(t);
-						triangles.add(t.reverse());
+						if (backFaces) {
+							triangles.add(t.reverse());
+						}
 					}
 				}
 				lc++;

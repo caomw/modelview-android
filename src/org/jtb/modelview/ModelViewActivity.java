@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
@@ -12,6 +13,9 @@ import android.os.Message;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -21,6 +25,11 @@ import android.view.WindowManager;
 public class ModelViewActivity extends Activity implements OnClickListener,
 		View.OnTouchListener {
 
+	private static final int PREFERENCES_REQUEST = 0;
+
+	static final int RESULT_INIT = 0;
+	static final int RESULT_NONE = 1;
+	
 	static final int LOADING_DIALOG = 0;
 	static final int LOAD_ERROR_DIALOG = 1;
 
@@ -44,10 +53,14 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 				showDialog(LOAD_ERROR_DIALOG);
 				break;
 			case HIDE_LOADING_WHAT:
-				dismissDialog(LOADING_DIALOG);
+				if (loadingDialog.isShowing()) {
+					loadingDialog.hide();
+				}
 				break;
 			case HIDE_LOAD_ERROR_WHAT:
-				dismissDialog(LOAD_ERROR_DIALOG);
+				if (loadErrorDialog.isShowing()) {
+					loadErrorDialog.hide();
+				}
 				break;
 			case PREPARE_SURFACE_WHAT:
 				prepareSurface();
@@ -56,24 +69,31 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 		}
 	};
 
+	@Override
+	public void onBackPressed() {
+		super.onBackPressed();
+		finish();
+	}
+
 	private GestureDetector gestureDetector;
 	private View.OnTouchListener gestureListener;
 	private float lastX, lastY;
 	private MeshRenderer renderer;
 	private GLSurfaceView surfaceView;
 	private ModelLoadException loadException = null;
+	private BrowseElement browseElement;
+	
 
-	private static class TestGestureDetector extends SimpleOnGestureListener {
+	private static class ModelViewGestureDetector extends
+			SimpleOnGestureListener {
 		private static final int SWIPE_MIN_DISTANCE = 120;
 		private static final int SWIPE_MAX_OFF_PATH = 500;
 		private static final int SWIPE_THRESHOLD_VELOCITY = 200;
 
 		private ModelViewActivity activity;
-		private MeshRenderer testRenderer;
 
-		TestGestureDetector(ModelViewActivity activity, MeshRenderer testRenderer) {
+		ModelViewGestureDetector(ModelViewActivity activity) {
 			this.activity = activity;
-			this.testRenderer = testRenderer;
 		}
 
 		@Override
@@ -99,7 +119,7 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN); // (NEW)
 
-		BrowseElement browseElement = savedInstanceState != null ? (BrowseElement) savedInstanceState
+		browseElement = savedInstanceState != null ? (BrowseElement) savedInstanceState
 				.get("browseElement") : null;
 		if (browseElement == null) {
 			Bundle extras = getIntent().getExtras();
@@ -112,8 +132,8 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 		browseElement.setContext(this);
 
 		// Gesture detection
-		gestureDetector = new GestureDetector(new TestGestureDetector(this,
-				renderer));
+		gestureDetector = new GestureDetector(
+				new ModelViewGestureDetector(this));
 		gestureListener = new View.OnTouchListener() {
 			public boolean onTouch(View v, MotionEvent event) {
 				if (gestureDetector.onTouchEvent(event)) {
@@ -122,13 +142,16 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 				return false;
 			}
 		};
+		
+		init();
+	}
 
-		final BrowseElement be = browseElement;
+	private void init() {
 		showDialog(LOADING_DIALOG);
 		new Thread(new Runnable() {
 			public void run() {
 				try {
-					renderer = new MeshRenderer(ModelViewActivity.this, be);
+					renderer = new MeshRenderer(ModelViewActivity.this, browseElement);
 					handler.sendEmptyMessage(PREPARE_SURFACE_WHAT);
 				} catch (ModelLoadException e) {
 					setLoadException(e);
@@ -138,9 +161,9 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 				}
 
 			}
-		}).start();
+		}).start();		
 	}
-
+	
 	private void setLoadException(ModelLoadException e) {
 		loadException = e;
 	}
@@ -152,8 +175,9 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 	private void prepareSurface() {
 		surfaceView = new GLSurfaceView(this);
 		setContentView(surfaceView);
-		surfaceView.setSoundEffectsEnabled(false);
+
 		surfaceView.setRenderer(renderer);
+		surfaceView.setSoundEffectsEnabled(false);
 		surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 		surfaceView.setOnClickListener(this);
 		surfaceView.setOnTouchListener(this);
@@ -170,30 +194,6 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 	public void onPause() {
 		super.onPause();
 	}
-
-	/*
-	 * @Override public boolean onTouch(View v, MotionEvent event) {
-	 * gestureDetector.onTouchEvent(event);
-	 * 
-	 * switch (event.getAction()) { case MotionEvent.ACTION_DOWN: lastX =
-	 * event.getX(); lastY = event.getY(); return true; case
-	 * MotionEvent.ACTION_MOVE: // Log.d("opengl-test", "event x: " +
-	 * event.getX() + ", last x: " // + lastX); float xChange = (lastX -
-	 * event.getX()) / 2; // Log.d("opengl-test", "event y: " + event.getY() +
-	 * ", last y: " // + lastY); float yChange = (lastY - event.getY()) / 2;
-	 * 
-	 * testRenderer.mesh.rx += -yChange; testRenderer.mesh.ry += -xChange;
-	 * view.requestRender();
-	 * 
-	 * // Log.d("opengl-test", "xChange: " + xChange + ", yChange: " // +
-	 * yChange);
-	 * 
-	 * lastX = event.getX(); lastY = event.getY();
-	 * 
-	 * return true; }
-	 * 
-	 * return false; }
-	 */
 
 	public boolean onTouch(View view, MotionEvent event) {
 		if (gestureDetector.onTouchEvent(event)) {
@@ -233,7 +233,14 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 			if (loadingDialog == null) {
 				loadingDialog = new ProgressDialog(this);
 				loadingDialog.setMessage("Loading ...");
-				// loadingDialog.setIndeterminate(true);
+				loadingDialog.setIndeterminate(true);
+				loadingDialog
+						.setOnCancelListener(new DialogInterface.OnCancelListener() {
+							@Override
+							public void onCancel(DialogInterface dialog) {
+								finish();
+							}
+						});
 			}
 			return loadingDialog;
 		case LOAD_ERROR_DIALOG:
@@ -257,5 +264,40 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 			return loadErrorDialog;
 		}
 		return null;
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+	}
+
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.modelview_menu, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.preferences_item:
+			Intent intent = new Intent(this, PrefsActivity.class);
+			startActivityForResult(intent, PREFERENCES_REQUEST);
+			return true;
+		}
+
+		return false;
+	}
+
+	protected void onActivityResult(int requestCode, int resultCode, Intent i) {
+		if (requestCode == PREFERENCES_REQUEST) {
+			switch (resultCode) {
+			case RESULT_INIT:
+				init();
+				break;
+			default:
+				break;
+			}
+		}
 	}
 }

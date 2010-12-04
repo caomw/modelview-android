@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import android.app.ActivityManager;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -16,6 +17,13 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 public class BrowseActivity extends ListActivity {
+	@Override
+	protected void onResume() {
+		super.onResume();
+		ActivityManager activityManager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+		activityManager.killBackgroundProcesses("org.jtb.modelview");
+	}
+
 	private ArrayAdapter<BrowseElement> browseElementAdapter;
 	private ListView listView;
 	private BrowseElement browseElement;
