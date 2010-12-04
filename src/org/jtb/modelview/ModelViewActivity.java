@@ -13,6 +13,7 @@ import android.os.Message;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -25,7 +26,6 @@ import android.view.WindowManager;
 public class ModelViewActivity extends Activity implements OnClickListener,
 		View.OnTouchListener {
 
-	private static final int PREFERENCES_REQUEST = 0;
 
 	static final int RESULT_INIT = 0;
 	static final int RESULT_NONE = 1;
@@ -69,11 +69,23 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 		}
 	};
 
+	/*
 	@Override
 	public void onBackPressed() {
 		super.onBackPressed();
 		finish();
 	}
+	*/
+	
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event)  {
+	    if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+	    	finish();
+	    	return true;
+	    }
+
+	    return super.onKeyDown(keyCode, event);
+	}	
 
 	private GestureDetector gestureDetector;
 	private View.OnTouchListener gestureListener;
@@ -82,7 +94,7 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 	private GLSurfaceView surfaceView;
 	private ModelLoadException loadException = null;
 	private BrowseElement browseElement;
-	
+	private OptionHandler optionHandler;
 
 	private static class ModelViewGestureDetector extends
 			SimpleOnGestureListener {
@@ -143,6 +155,7 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 			}
 		};
 		
+		optionHandler = new OptionHandler(this);
 		init();
 	}
 
@@ -269,6 +282,7 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+		android.os.Process.killProcess(android.os.Process.myPid());
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -279,18 +293,11 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.preferences_item:
-			Intent intent = new Intent(this, PrefsActivity.class);
-			startActivityForResult(intent, PREFERENCES_REQUEST);
-			return true;
-		}
-
-		return false;
+		return optionHandler.handle(item.getItemId());
 	}
 
 	protected void onActivityResult(int requestCode, int resultCode, Intent i) {
-		if (requestCode == PREFERENCES_REQUEST) {
+		if (requestCode == OptionHandler.PREFERENCES_REQUEST) {
 			switch (resultCode) {
 			case RESULT_INIT:
 				init();

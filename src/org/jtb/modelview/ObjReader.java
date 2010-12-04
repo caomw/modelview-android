@@ -22,8 +22,11 @@ class ObjReader extends ModelReader {
 	private static final Pattern FACE_ELEMENT_PATTERN = Pattern
 			.compile("(\\d+)(?:/(\\d*))?(?:/(\\d*))?");
 
+	private Prefs prefs;
+	
 	ObjReader(Context context) {
 		super(context);
+		prefs = new Prefs(context);
 	}
 
 	Mesh readMesh(InputStream is) throws ModelLoadException {
@@ -42,6 +45,7 @@ class ObjReader extends ModelReader {
 			Reader r = new InputStreamReader(is);
 			BufferedReader br = new BufferedReader(r, BUFFER_SIZE);
 
+			boolean backFaces = prefs.isBackFaces();
 			while ((line = br.readLine()) != null) {
 				lineNumber++;
 				line = line.trim();
@@ -123,6 +127,9 @@ class ObjReader extends ModelReader {
 
 						Triangle t = new Triangle(v1, v2, v3);
 						triangles.add(t);
+						if (backFaces) {
+							triangles.add(t.reverse());
+						}						
 					}
 				}
 			}

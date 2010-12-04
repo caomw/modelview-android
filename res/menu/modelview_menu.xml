@@ -1,4 +1,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+	<item android:id="@+id/home_item" android:title="Project Home"
+		android:icon="@android:drawable/ic_menu_compass" />
+	<item android:id="@+id/help_item" android:title="Help"
+		android:icon="@android:drawable/ic_menu_help" />
+	<item android:id="@+id/report_item" android:title="Report Issue"
+		android:icon="@android:drawable/ic_menu_view" />
 	<item android:id="@+id/preferences_item" android:title="Preferences"
 		android:icon="@android:drawable/ic_menu_preferences" />
 </menu>
