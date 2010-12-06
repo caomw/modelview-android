@@ -61,10 +61,10 @@ public class MeshRenderer implements Renderer {
 
 		float lightPosition[] = { mesh.mid.vertex[X], mesh.mid.vertex[Y], 100f,
 				1f };
-		float lightDirection[] = { 0f, 0f, 1f };
+		//float lightDirection[] = { 0f, 0f, 1f };
 
 		gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_POSITION, lightPosition, 0);
-		gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_SPOT_DIRECTION, lightDirection, 0);
+		//gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_SPOT_DIRECTION, lightDirection, 0);
 
 		// gl.glLightf(GL10.GL_LIGHT0, GL10.GL_SPOT_CUTOFF, 180f);
 	}
