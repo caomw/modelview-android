@@ -7,6 +7,8 @@ import static org.jtb.modelview.Vertex.Z;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.util.FloatMath;
+
 public class Triangle {
 	static final int V1 = 0;
 	static final int V2 = 1;
@@ -83,9 +85,9 @@ public class Triangle {
 			normal = u.cross(v);
 
 			// normalize
-			double factor = Math.sqrt(Math.pow(normal.vertex[X], 2)
-					+ Math.pow(normal.vertex[Y], 2)
-					+ Math.pow(normal.vertex[Z], 2));
+			float factor = FloatMath.sqrt(normal.vertex[X]*normal.vertex[X]
+					+ normal.vertex[Y]*normal.vertex[Y]
+					+ normal.vertex[Z]*normal.vertex[Z]);
 			normal.vertex[X] /= factor;
 			normal.vertex[Y] /= factor;
 			normal.vertex[Z] /= factor;

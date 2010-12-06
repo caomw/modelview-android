@@ -1,5 +1,7 @@
 package org.jtb.modelview;
 
+import android.util.FloatMath;
+
 public class Vertex {
 	static final int X = 0;
 	static final int Y = 1;
@@ -46,7 +48,7 @@ public class Vertex {
 		float xd = this.vertex[X] - other.vertex[X];
 		float yd = this.vertex[Y] - other.vertex[Y];
 		float zd = this.vertex[Z] - other.vertex[Z];
-		float d = (float) Math.sqrt(xd * xd + yd * yd + zd * zd);
+		float d =  FloatMath.sqrt(xd * xd + yd * yd + zd * zd);
 		return d;
 	}
 }

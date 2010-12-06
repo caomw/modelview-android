@@ -77,6 +77,7 @@ public class MeshRenderer implements Renderer {
 
 		gl.glPushMatrix();
 		gl.glTranslatef(mesh.mid.vertex[X], mesh.mid.vertex[Y], mesh.mid.vertex[Z]);
+		gl.glScalef(mesh.scale, mesh.scale, mesh.scale);
 		gl.glRotatef(mesh.rx + mesh.dx, 1, 0, 0);
 		gl.glRotatef(mesh.ry + mesh.dy, 0, 1, 0);
 		gl.glTranslatef(-mesh.mid.vertex[X], -mesh.mid.vertex[Y], -mesh.mid.vertex[Z]);

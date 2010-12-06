@@ -17,8 +17,6 @@ public class Mesh {
 	private int numOfIndices = -1;
 	private FloatBuffer colorBuffer = null;
 	private FloatBuffer normalsBuffer;
-
-	private int frontFace = GL10.GL_CCW;
 	
 	// Rotate params.
 	float rx = 0f;
@@ -27,12 +25,13 @@ public class Mesh {
 	float dy = 0f;
 	float dxSpeed = 0f;
 	float dySpeed = 0f;
+	float scale = 1f;
 	
 	Vertex max, min, mid;
 	Float radius;
 	
 	public void draw(GL10 gl) {
-		gl.glFrontFace(frontFace);
+		gl.glFrontFace(GL10.GL_CCW);
 
 		gl.glEnable(GL10.GL_CULL_FACE);
 
@@ -134,10 +133,6 @@ public class Mesh {
 		colorBuffer.position(0);
 	}
 
-	void setFrontFace(int frontFace) {
-		this.frontFace = frontFace;
-	}
-	
 	void dampenSpeed(long deltaMillis) {
 		if (dxSpeed != 0.0f) {
 			dxSpeed *= (1.0f - 0.001f * deltaMillis);

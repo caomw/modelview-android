@@ -10,6 +10,7 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.FloatMath;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
@@ -22,16 +23,20 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.WindowManager;
+import static org.jtb.modelview.Vertex.*;
 
 public class ModelViewActivity extends Activity implements OnClickListener,
 		View.OnTouchListener {
 
-
 	static final int RESULT_INIT = 0;
 	static final int RESULT_NONE = 1;
-	
+
 	static final int LOADING_DIALOG = 0;
 	static final int LOAD_ERROR_DIALOG = 1;
+
+	private static final int TOUCHMODE_DRAG = 0;
+	private static final int TOUCHMODE_ZOOM = 1;
+	private static final int TOUCHMODE_NONE = -1;
 
 	private ProgressDialog loadingDialog;
 	private AlertDialog loadErrorDialog;
@@ -70,38 +75,33 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 	};
 
 	/*
-	@Override
-	public void onBackPressed() {
-		super.onBackPressed();
-		finish();
-	}
-	*/
-	
-	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event)  {
-	    if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-	    	finish();
-	    	return true;
-	    }
+	 * @Override public void onBackPressed() { super.onBackPressed(); finish();
+	 * }
+	 */
 
-	    return super.onKeyDown(keyCode, event);
-	}	
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+			finish();
+			return true;
+		}
+
+		return super.onKeyDown(keyCode, event);
+	}
 
 	private GestureDetector gestureDetector;
 	private View.OnTouchListener gestureListener;
-	private float lastX, lastY;
+	private Vertex lastRotate = new Vertex();
 	private MeshRenderer renderer;
 	private GLSurfaceView surfaceView;
 	private ModelLoadException loadException = null;
 	private BrowseElement browseElement;
 	private OptionHandler optionHandler;
+	private int touchMode = TOUCHMODE_DRAG;
+	private float oldDist = 1f;
 
 	private static class ModelViewGestureDetector extends
 			SimpleOnGestureListener {
-		private static final int SWIPE_MIN_DISTANCE = 120;
-		private static final int SWIPE_MAX_OFF_PATH = 500;
-		private static final int SWIPE_THRESHOLD_VELOCITY = 200;
-
 		private ModelViewActivity activity;
 
 		ModelViewGestureDetector(ModelViewActivity activity) {
@@ -154,7 +154,7 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 				return false;
 			}
 		};
-		
+
 		optionHandler = new OptionHandler(this);
 		init();
 	}
@@ -164,7 +164,8 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 		new Thread(new Runnable() {
 			public void run() {
 				try {
-					renderer = new MeshRenderer(ModelViewActivity.this, browseElement);
+					renderer = new MeshRenderer(ModelViewActivity.this,
+							browseElement);
 					handler.sendEmptyMessage(PREPARE_SURFACE_WHAT);
 				} catch (ModelLoadException e) {
 					setLoadException(e);
@@ -174,9 +175,9 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 				}
 
 			}
-		}).start();		
+		}).start();
 	}
-	
+
 	private void setLoadException(ModelLoadException e) {
 		loadException = e;
 	}
@@ -208,31 +209,59 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 		super.onPause();
 	}
 
-	public boolean onTouch(View view, MotionEvent event) {
-		if (gestureDetector.onTouchEvent(event)) {
+	public boolean onTouch(View view, MotionEvent rawEvent) {
+		WrapMotionEvent event = WrapMotionEvent.wrap(rawEvent);
+
+		if (gestureDetector.onTouchEvent(rawEvent)) {
 			return true;
 		}
 
-		switch (event.getAction()) {
+		switch (event.getAction() & MotionEvent.ACTION_MASK) {
 		case MotionEvent.ACTION_DOWN:
 			surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
 			renderer.mesh.dxSpeed = 0.0f;
 			renderer.mesh.dySpeed = 0.0f;
-			lastX = event.getX();
-			lastY = event.getY();
+			lastRotate.vertex[X] = event.getX();
+			lastRotate.vertex[Y] = event.getY();
+
+			touchMode = TOUCHMODE_DRAG;
+			break;
+		case MotionEvent.ACTION_POINTER_DOWN:
+			oldDist = spacing(event);
+			if (oldDist > 10f) {
+				touchMode = TOUCHMODE_ZOOM;
+			}
+			break;
+		case MotionEvent.ACTION_UP:
+		case MotionEvent.ACTION_POINTER_UP:
+			touchMode = TOUCHMODE_NONE;
 			break;
 		case MotionEvent.ACTION_MOVE:
 			surfaceView.requestRender();
+			if (touchMode == TOUCHMODE_DRAG) {
+				renderer.mesh.ry += event.getX() - lastRotate.vertex[X];
+				renderer.mesh.rx += event.getY() - lastRotate.vertex[Y];
+				lastRotate.vertex[X] = event.getX();
+				lastRotate.vertex[Y] = event.getY();
+			} else if (touchMode == TOUCHMODE_ZOOM) {
+	            float newDist = spacing(event);
+	            if (newDist > 10f) {
+	               renderer.mesh.scale *= newDist / oldDist;
+	            }
+	            oldDist = newDist;
+			}
 
-			renderer.mesh.ry += event.getX() - lastX;
-			renderer.mesh.rx += event.getY() - lastY;
-			lastX = event.getX();
-			lastY = event.getY();
 			break;
 		}
 
-		return super.onTouchEvent(event);
+		return super.onTouchEvent(rawEvent);
+	}
+
+	private float spacing(WrapMotionEvent event) {
+		float x = event.getX(0) - event.getX(1);
+		float y = event.getY(0) - event.getY(1);
+		return FloatMath.sqrt(x * x + y * y);
 	}
 
 	public void onClick(View v) {
@@ -249,7 +278,6 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 				loadingDialog.setIndeterminate(true);
 				loadingDialog
 						.setOnCancelListener(new DialogInterface.OnCancelListener() {
-							@Override
 							public void onCancel(DialogInterface dialog) {
 								finish();
 							}
