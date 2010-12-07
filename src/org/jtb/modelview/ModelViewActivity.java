@@ -7,6 +7,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.opengl.GLSurfaceView;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -27,6 +28,9 @@ import static org.jtb.modelview.Vertex.*;
 
 public class ModelViewActivity extends Activity implements OnClickListener,
 		View.OnTouchListener {
+
+	private static final int VERSION = Build.VERSION.SDK_INT;
+	private static final float MT_THRESHOLD = 10f;
 
 	static final int RESULT_INIT = 0;
 	static final int RESULT_NONE = 1;
@@ -210,7 +214,7 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 	}
 
 	public boolean onTouch(View view, MotionEvent rawEvent) {
-		WrapMotionEvent event = WrapMotionEvent.wrap(rawEvent);
+		VersionedMotionEvent event = VersionedMotionEvent.newInstance(rawEvent);
 
 		if (gestureDetector.onTouchEvent(rawEvent)) {
 			return true;
@@ -222,15 +226,18 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 
 			renderer.mesh.dxSpeed = 0.0f;
 			renderer.mesh.dySpeed = 0.0f;
+
 			lastRotate.vertex[X] = event.getX();
 			lastRotate.vertex[Y] = event.getY();
 
 			touchMode = TOUCHMODE_DRAG;
 			break;
 		case MotionEvent.ACTION_POINTER_DOWN:
-			oldDist = spacing(event);
-			if (oldDist > 10f) {
-				touchMode = TOUCHMODE_ZOOM;
+			if (VERSION > 4) {
+				oldDist = spacing(event);
+				if (oldDist > MT_THRESHOLD) {
+					touchMode = TOUCHMODE_ZOOM;
+				}
 			}
 			break;
 		case MotionEvent.ACTION_UP:
@@ -245,11 +252,11 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 				lastRotate.vertex[X] = event.getX();
 				lastRotate.vertex[Y] = event.getY();
 			} else if (touchMode == TOUCHMODE_ZOOM) {
-	            float newDist = spacing(event);
-	            if (newDist > 10f) {
-	               renderer.mesh.scale *= newDist / oldDist;
-	            }
-	            oldDist = newDist;
+				float newDist = spacing(event);
+				if (newDist > MT_THRESHOLD) {
+					renderer.mesh.scale *= newDist / oldDist;
+				}
+				oldDist = newDist;
 			}
 
 			break;
@@ -258,7 +265,7 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 		return super.onTouchEvent(rawEvent);
 	}
 
-	private float spacing(WrapMotionEvent event) {
+	private float spacing(VersionedMotionEvent event) {
 		float x = event.getX(0) - event.getX(1);
 		float y = event.getY(0) - event.getY(1);
 		return FloatMath.sqrt(x * x + y * y);

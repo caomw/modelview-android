@@ -37,7 +37,7 @@ public class MeshRenderer implements Renderer {
 		gl.glClearDepthf(1.0f);
 		gl.glEnable(GL10.GL_DEPTH_TEST);
 		gl.glDepthFunc(GL10.GL_LEQUAL);
-
+		gl.glEnable(GL10.GL_RESCALE_NORMAL);
 		gl.glEnable(GL10.GL_LIGHTING);
 		gl.glEnable(GL10.GL_LIGHT0);
 		gl.glEnable(GL10.GL_COLOR_MATERIAL);
