@@ -141,9 +141,6 @@ class ObjReader extends ModelReader {
 				throw new IllegalArgumentException("no triangles read");
 			}
 
-			mesh.mid = min.middle(max);
-			mesh.radius = Triangle.boundingRadius(triangles, mesh.mid);
-
 			mesh.setTriangles(triangles);
 
 			return mesh;

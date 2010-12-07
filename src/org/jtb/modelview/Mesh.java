@@ -80,6 +80,9 @@ class Mesh {
 		float[] colors = Triangle.toColors(tris);
 		setColors(colors);
 		colors = null;
+		
+		mid = min.middle(max);
+		radius = Triangle.boundingRadius(tris, mid);
 	}
 
 	private void setVertices(float[] vertices) {

@@ -116,7 +116,7 @@ class OffReader extends ModelReader {
 					for (int i = 0; i < nv; i++) {
 						indices[i] = Integer.parseInt(tok.nextToken());
 					}
-					Color color = Color.GRAY;
+					Color color = null;
 					if (tok.hasMoreTokens()) {
 						if (tok.countTokens() >= 3) {
 							// can't handle pointer to color map case
@@ -137,9 +137,11 @@ class OffReader extends ModelReader {
 						Vertex v2 = vertices.get(indices[i]);
 						Vertex v3 = vertices.get(indices[i + 1]);
 
-						v1.color = color;
-						v2.color = color;
-						v3.color = color;
+						if (color != null) {
+							v1.color = color;
+							v2.color = color;
+							v3.color = color;
+						}
 
 						Triangle t = new Triangle(v1, v2, v3);
 						triangles.add(t);
@@ -154,11 +156,7 @@ class OffReader extends ModelReader {
 				throw new IllegalArgumentException("no triangles read");
 			}
 
-			mesh.mid = min.middle(max);
-			mesh.radius = Triangle.boundingRadius(triangles, mesh.mid);
-
 			mesh.setTriangles(triangles);
-
 			return mesh;
 		} catch (Throwable t) {
 			mesh = null;

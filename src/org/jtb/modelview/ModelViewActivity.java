@@ -77,29 +77,13 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 		}
 	};
 
-	/*
-	 * @Override public void onBackPressed() { super.onBackPressed(); finish();
-	 * }
-	 */
-
-	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-			finish();
-			return true;
-		}
-
-		return super.onKeyDown(keyCode, event);
-	}
-
-	private GestureDetector gestureDetector;
-	private View.OnTouchListener gestureListener;
+	private GestureDetector gestureDetector = null;
 	private Vertex lastRotate = new Vertex();
-	private MeshRenderer renderer;
-	private GLSurfaceView surfaceView;
+	private MeshRenderer renderer = null;
+	private GLSurfaceView surfaceView = null;
 	private ModelLoadException loadException = null;
-	private BrowseElement browseElement;
-	private OptionHandler optionHandler;
+	private BrowseElement browseElement = null;
+	private OptionHandler optionHandler = null;
 	private int touchMode = TOUCHMODE_DRAG;
 	private float oldDist = 1f;
 
@@ -130,9 +114,9 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 		super.onCreate(savedInstanceState);
 
 		// full screen
-		this.requestWindowFeature(Window.FEATURE_NO_TITLE); // (NEW)
+		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-				WindowManager.LayoutParams.FLAG_FULLSCREEN); // (NEW)
+				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		browseElement = savedInstanceState != null ? (BrowseElement) savedInstanceState
 				.get("browseElement") : null;
@@ -149,16 +133,8 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 		// Gesture detection
 		gestureDetector = new GestureDetector(
 				new ModelViewGestureDetector(this));
-		gestureListener = new View.OnTouchListener() {
-			public boolean onTouch(View v, MotionEvent event) {
-				if (gestureDetector.onTouchEvent(event)) {
-					return true;
-				}
-				return false;
-			}
-		};
-
 		optionHandler = new OptionHandler(this);
+
 		init();
 	}
 
@@ -205,11 +181,24 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 	@Override
 	public void onResume() {
 		super.onResume();
+		if (surfaceView != null) {
+			surfaceView.requestRender();
+		}
 	}
 
 	@Override
 	public void onPause() {
 		super.onPause();
+	}
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+			finish();
+			return true;
+		}
+
+		return super.onKeyDown(keyCode, event);
 	}
 
 	public boolean onTouch(View view, MotionEvent rawEvent) {
@@ -315,7 +304,10 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		android.os.Process.killProcess(android.os.Process.myPid());
+		// use pre-8 method of ensuring that our process is killed
+		if (Build.VERSION.SDK_INT < 8) {
+			android.os.Process.killProcess(android.os.Process.myPid());
+		}
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {

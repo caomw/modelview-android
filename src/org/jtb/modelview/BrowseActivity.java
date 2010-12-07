@@ -8,6 +8,7 @@ import java.util.List;
 import android.app.ActivityManager;
 import android.app.ListActivity;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.Menu;
@@ -23,15 +24,24 @@ public class BrowseActivity extends ListActivity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		//ActivityManager activityManager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
-		//activityManager.killBackgroundProcesses(getApplication().getPackageName());
+		int version = Build.VERSION.SDK_INT;
+		// use version 8+ method of killing our background processes
+		if (version >= 8) {
+			new Runnable() {
+				public void run() {					
+					ActivityManager activityManager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+					activityManager.killBackgroundProcesses(getApplication()
+							.getPackageName());
+				}
+			}.run();
+		}
 	}
 
 	private ArrayAdapter<BrowseElement> browseElementAdapter;
 	private ListView listView;
 	private BrowseElement browseElement;
 	private OptionHandler optionHandler;
-	
+
 	@SuppressWarnings("serial")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +49,7 @@ public class BrowseActivity extends ListActivity {
 		setContentView(R.layout.browse);
 
 		optionHandler = new OptionHandler(this);
-		
+
 		listView = (ListView) findViewById(android.R.id.list);
 		listView.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View v,
@@ -80,9 +90,6 @@ public class BrowseActivity extends ListActivity {
 					});
 		}
 
-		// dirText = (TextView) findViewById(R.id.browse_dir_text);
-		// dirText.setText(dir);
-
 		try {
 			List<BrowseElement> bes = browseElement.getChildren();
 			Collections.sort(bes);
@@ -97,7 +104,7 @@ public class BrowseActivity extends ListActivity {
 		setTitle(getResources().getString(R.string.app_name) + ": "
 				+ browseElement.toPathString());
 	}
-	
+
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.modelview_menu, menu);
@@ -108,5 +115,5 @@ public class BrowseActivity extends ListActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		return optionHandler.handle(item.getItemId());
 	}
-	
+
 }
