@@ -29,7 +29,6 @@ import static org.jtb.modelview.Vertex.*;
 public class ModelViewActivity extends Activity implements OnClickListener,
 		View.OnTouchListener {
 
-	private static final int VERSION = Build.VERSION.SDK_INT;
 	private static final float MT_THRESHOLD = 10f;
 
 	static final int RESULT_INIT = 0;
@@ -233,7 +232,7 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 			touchMode = TOUCHMODE_DRAG;
 			break;
 		case MotionEvent.ACTION_POINTER_DOWN:
-			if (VERSION > 4) {
+			if (Build.VERSION.SDK_INT > 4) {
 				oldDist = spacing(event);
 				if (oldDist > MT_THRESHOLD) {
 					touchMode = TOUCHMODE_ZOOM;
@@ -273,7 +272,6 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
-
 	}
 
 	protected Dialog onCreateDialog(int id) {

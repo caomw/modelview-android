@@ -2,15 +2,13 @@ package org.jtb.modelview;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.CharBuffer;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.List;
 
 import javax.microedition.khronos.opengles.GL10;
 
-public class Mesh {
+class Mesh {
 
 	private FloatBuffer verticesBuffer = null;
 	private ShortBuffer indicesBuffer = null;
@@ -28,9 +26,9 @@ public class Mesh {
 	float scale = 1f;
 	
 	Vertex max, min, mid;
-	Float radius;
+	float radius;
 	
-	public void draw(GL10 gl) {
+	void draw(GL10 gl) {
 		gl.glFrontFace(GL10.GL_CCW);
 
 		gl.glEnable(GL10.GL_CULL_FACE);
@@ -67,21 +65,21 @@ public class Mesh {
 	}
 
 	protected void setTriangles(List<Triangle> tris) {
-		setTriangles(tris.toArray(new Triangle[0]));
-	}
-
-	protected void setTriangles(Triangle[] tris) {
 		float[] floats = Triangle.toFloatArray(tris);
 		setVertices(floats);
+		floats = null;
 
 		float[] normals = Triangle.toNormals(tris);
 		setNormals(normals);
-
+		normals = null;
+		
 		int[] indices = Triangle.toIndices(tris);
 		setIndices(indices);
-
+		indices = null;
+		
 		float[] colors = Triangle.toColors(tris);
 		setColors(colors);
+		colors = null;
 	}
 
 	private void setVertices(float[] vertices) {
@@ -113,11 +111,7 @@ public class Mesh {
 		
 		short[] shorts = new short[indices.length];
 		for (int i = 0; i < shorts.length; i++) {
-			int x = indices[i];
-			if (x > 32767) {
-				x -= 65536;
-			}
-			shorts[i] = (short) x;
+			shorts[i] = (short) indices[i];
 		}
 		indicesBuffer.put(shorts);
 		indicesBuffer.position(0);

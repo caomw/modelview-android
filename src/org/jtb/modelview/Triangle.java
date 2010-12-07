@@ -15,7 +15,6 @@ public class Triangle {
 	static final int V3 = 2;
 
 	Vertex[] vertices = new Vertex[3];
-
 	private Vertex normal = null;
 
 	Triangle(Color color, Vertex v1, Vertex v2, Vertex v3, Vertex normal) {
@@ -50,7 +49,7 @@ public class Triangle {
 	}
 
 	public float[] colorArray() {
-		float[] floats = new float[3 * 4];
+		float[] floats = new float[12]; // 12 = 3 * 4
 		System.arraycopy(vertices[V1].color.rgba, 0, floats, 0 * 4, 4);
 		System.arraycopy(vertices[V2].color.rgba, 0, floats, 1 * 4, 4);
 		System.arraycopy(vertices[V3].color.rgba, 0, floats, 2 * 4, 4);
@@ -58,22 +57,12 @@ public class Triangle {
 		return floats;
 	}
 
-	@SuppressWarnings("serial")
-	List<Vertex> verticesAsList() {
-		return new ArrayList<Vertex>() {
-			{
-				add(vertices[V1]);
-				add(vertices[V2]);
-				add(vertices[V3]);
-			}
-		};
-	}
-
-	public static float[] toFloatArray(Triangle[] tris) {
-		float[] floats = new float[tris.length * 3 * 3];
-		for (int i = 0; i < tris.length; i++) {
+	public static float[] toFloatArray(List<Triangle> tris) {
+		int size = tris.size();
+		float[] floats = new float[size * 9]; // 9 = 3 * 3
+		for (int i = 0; i < size; i++) {
 			// 3 * 3 = 9 = vertices x 3 points
-			System.arraycopy(tris[i].toFloatArray(), 0, floats, i * 9, 9);
+			System.arraycopy(tris.get(i).toFloatArray(), 0, floats, i * 9, 9);
 		}
 		return floats;
 	}
@@ -106,17 +95,20 @@ public class Triangle {
 		return na;
 	}
 
-	public static float[] toNormals(Triangle[] tris) {
-		float[] floats = new float[tris.length * 3 * 3];
-		for (int i = 0; i < tris.length; i++) {
-			float[] na = tris[i].normalArray();
+	public static float[] toNormals(List<Triangle> tris) {
+		int size = tris.size();
+		float[] floats = new float[size * 9]; // 9 = 3 * 3
+		float[] na;
+		for (int i = 0; i < size; i++) {
+			na = tris.get(i).normalArray();
 			System.arraycopy(na, 0, floats, i * 9, 9);
 		}
 		return floats;
 	}
 
-	public static int[] toIndices(Triangle[] tris) {
-		int[] indices = new int[tris.length * 3];
+	public static int[] toIndices(List<Triangle> tris) {
+		int size = tris.size();
+		int[] indices = new int[size * 3];
 		int i = 0;
 		for (i = 0; i < indices.length; i++) {
 			indices[i] = i;
@@ -124,36 +116,23 @@ public class Triangle {
 		return indices;
 	}
 
-	public static float[] toColors(Triangle[] tris) {
-		float[] floats = new float[tris.length * 3 * 4];
-		for (int i = 0; i < tris.length; i++) {
-			float[] ca = tris[i].colorArray();
-			System.arraycopy(ca, 0, floats, i * 3 * 4, 3 * 4);
+	public static float[] toColors(List<Triangle> tris) {
+		int size = tris.size();
+		float[] floats = new float[size * 12]; // 12 = 3 * 4
+		float[] ca;
+		for (int i = 0; i < size; i++) {
+			ca = tris.get(i).colorArray();
+			System.arraycopy(ca, 0, floats, i * 12, 12); // 12 = 3*4
 		}
 		return floats;
 	}
 
-	static void center(List<Triangle> tris, float minX, float maxX, float minY,
-			float maxY) {
-		float midX = (minX + maxX) / 2;
-		float midY = (minY + maxY) / 2;
-
-		for (Triangle t : tris) {
-			for (Vertex v : t.verticesAsList()) {
-				v.vertex[X] -= midX;
-				v.vertex[Y] -= midY;
-			}
-		}
-	}
-
-	static float boundingRadius(List<Triangle> tris, Vertex min, Vertex max) {
-		Vertex c = new Vertex((min.vertex[X] + max.vertex[X]) / 2,
-				(min.vertex[Y] + max.vertex[Y]) / 2,
-				(min.vertex[Z] + max.vertex[Z]) / 2);
+	static float boundingRadius(List<Triangle> tris, Vertex mid) {
 		float radius = 0f;
+		float dist;
 		for (Triangle t : tris) {
-			for (Vertex v : t.verticesAsList()) {
-				float dist = c.distance(v);
+			for (Vertex v : t.vertices) {
+				dist = mid.distance(v);
 				if (dist > radius) {
 					radius = dist;
 				}

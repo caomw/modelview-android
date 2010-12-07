@@ -32,16 +32,14 @@ class ObjReader extends ModelReader {
 	Mesh readMesh(InputStream is) throws ModelLoadException {
 		String line = null;
 		int lineNumber = 0;
+		Mesh mesh = new Mesh();
+		List<Triangle> triangles = new ArrayList<Triangle>();
+		List<Vertex> vertices = new ArrayList<Vertex>();
+		List<Vertex> normals = new ArrayList<Vertex>();
+		Vertex min = mesh.min = new Vertex();
+		Vertex max = mesh.max = new Vertex();
 
 		try {
-			List<Triangle> triangles = new ArrayList<Triangle>();
-			List<Vertex> vertices = new ArrayList<Vertex>();
-			List<Vertex> normals = new ArrayList<Vertex>();
-
-			Vertex min = new Vertex();
-			Vertex max = new Vertex();
-			Vertex mid = new Vertex();
-
 			Reader r = new InputStreamReader(is);
 			BufferedReader br = new BufferedReader(r, BUFFER_SIZE);
 
@@ -73,7 +71,7 @@ class ObjReader extends ModelReader {
 					}
 					vertices.add(v);
 
-					// check for max, min
+					// check for mesh.max, mesh.min
 					if (v.vertex[X] > max.vertex[X]) {
 						max.vertex[X] = v.vertex[X];
 					} else if (v.vertex[X] < min.vertex[X]) {
@@ -120,6 +118,12 @@ class ObjReader extends ModelReader {
 							triNormals.add(normals.get(normalPtr - 1));
 						}
 					}
+					// TODO: set parsed normals (if any) for triangle.
+					// problem is that we want one normal per triangle, 
+					// but we are parsing a normal per vertex
+					// don't know how to handle this 
+					// just pick a normal? shouldn't they all be the
+					// same for a particular face?
 					for (int i = 1; i < triVertices.size() - 1; i++) {
 						Vertex v1 = triVertices.get(0);
 						Vertex v2 = triVertices.get(i);
@@ -133,19 +137,22 @@ class ObjReader extends ModelReader {
 					}
 				}
 			}
-			mid.vertex[X] = (min.vertex[X] + max.vertex[X]) / 2;
-			mid.vertex[Y] = (min.vertex[Y] + max.vertex[Y]) / 2;
-			mid.vertex[Z] = (min.vertex[Z] + max.vertex[Z]) / 2;
+			if (triangles.size() == 0) {
+				throw new IllegalArgumentException("no triangles read");
+			}
 
-			Mesh mesh = new Mesh();
-			mesh.radius = Triangle.boundingRadius(triangles, min, max);
+			mesh.mid = min.middle(max);
+			mesh.radius = Triangle.boundingRadius(triangles, mesh.mid);
+
 			mesh.setTriangles(triangles);
-			mesh.max = max;
-			mesh.min = min;
-			mesh.mid = mid;
 
 			return mesh;
 		} catch (Throwable t) {
+			mesh = null;
+			triangles = null;
+			vertices = null;
+			normals = null;
+
 			ModelLoadException mle = new ModelLoadException(t);
 			mle.setLineNumber(lineNumber);
 			mle.setLine(line);

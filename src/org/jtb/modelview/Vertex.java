@@ -40,8 +40,12 @@ public class Vertex {
 		return r;
 	}
 
-	public float[] getCoordinates() {
-		return vertex;
+	Vertex middle(Vertex other) {
+		Vertex mid = new Vertex();
+		mid.vertex[X] = (this.vertex[X] + other.vertex[X]) / 2;
+		mid.vertex[Y] = (this.vertex[Y] + other.vertex[Y]) / 2;
+		mid.vertex[Z] = (this.vertex[Z] + other.vertex[Z]) / 2;
+		return mid;
 	}
 
 	float distance(Vertex other) {

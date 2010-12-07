@@ -18,7 +18,7 @@ import static org.jtb.modelview.Vertex.*;
 
 class OffReader extends ModelReader {
 	private Prefs prefs;
-	
+
 	OffReader(Context context) {
 		super(context);
 		prefs = new Prefs(context);
@@ -27,13 +27,13 @@ class OffReader extends ModelReader {
 	Mesh readMesh(InputStream is) throws ModelLoadException {
 		String line = null;
 		int lineNumber = 0;
+		Mesh mesh = new Mesh();
+		List<Triangle> triangles = new ArrayList<Triangle>();
+		List<Vertex> vertices = new ArrayList<Vertex>();
+		Vertex min = mesh.min = new Vertex();
+		Vertex max = mesh.max = new Vertex();
 
 		try {
-			List<Triangle> triangles;
-			Vertex min = new Vertex();
-			Vertex max = new Vertex();
-			Vertex mid = new Vertex();
-
 			Reader r = new InputStreamReader(is);
 			BufferedReader br = new BufferedReader(r, BUFFER_SIZE);
 
@@ -53,9 +53,6 @@ class OffReader extends ModelReader {
 			int faceCount = Integer.parseInt(tok.nextToken());
 			@SuppressWarnings("unused")
 			int edgeCount = Integer.parseInt(tok.nextToken());
-
-			List<Vertex> vertices = new ArrayList<Vertex>();
-			triangles = new ArrayList<Triangle>();
 
 			int lc = 0;
 			boolean backFaces = prefs.isBackFaces();
@@ -119,7 +116,7 @@ class OffReader extends ModelReader {
 					for (int i = 0; i < nv; i++) {
 						indices[i] = Integer.parseInt(tok.nextToken());
 					}
-					Color color = null;
+					Color color = Color.GRAY;
 					if (tok.hasMoreTokens()) {
 						if (tok.countTokens() >= 3) {
 							// can't handle pointer to color map case
@@ -140,11 +137,10 @@ class OffReader extends ModelReader {
 						Vertex v2 = vertices.get(indices[i]);
 						Vertex v3 = vertices.get(indices[i + 1]);
 
-						if (color != null) {
-							v1.color = color;
-							v2.color = color;
-							v3.color = color;
-						}
+						v1.color = color;
+						v2.color = color;
+						v3.color = color;
+
 						Triangle t = new Triangle(v1, v2, v3);
 						triangles.add(t);
 						if (backFaces) {
@@ -155,22 +151,20 @@ class OffReader extends ModelReader {
 				lc++;
 			}
 			if (triangles.size() == 0) {
-				throw new ModelLoadException("No triangles read");
+				throw new IllegalArgumentException("no triangles read");
 			}
 
-			mid.vertex[X] = (min.vertex[X] + max.vertex[X]) / 2;
-			mid.vertex[Y] = (min.vertex[Y] + max.vertex[Y]) / 2;
-			mid.vertex[Z] = (min.vertex[Z] + max.vertex[Z]) / 2;
+			mesh.mid = min.middle(max);
+			mesh.radius = Triangle.boundingRadius(triangles, mesh.mid);
 
-			Mesh mesh = new Mesh();
-			mesh.radius = Triangle.boundingRadius(triangles, min, max);
 			mesh.setTriangles(triangles);
-			mesh.max = max;
-			mesh.min = min;
-			mesh.mid = mid;
 
 			return mesh;
 		} catch (Throwable t) {
+			mesh = null;
+			triangles = null;
+			vertices = null;
+
 			ModelLoadException mle = new ModelLoadException(t);
 			mle.setLineNumber(lineNumber);
 			mle.setLine(line);
