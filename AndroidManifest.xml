@@ -14,5 +14,6 @@
 			android:process=":ModelView" />
 		<activity android:name=".PrefsActivity" />
 	</application>
+	<uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES"/>
 	<uses-sdk android:minSdkVersion="4" />
 </manifest> 

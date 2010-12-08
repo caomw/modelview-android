@@ -12,7 +12,7 @@ class Mesh {
 
 	private FloatBuffer verticesBuffer = null;
 	private ShortBuffer indicesBuffer = null;
-	private int numOfIndices = -1;
+	private int indexCount = -1;
 	private FloatBuffer colorBuffer = null;
 	private FloatBuffer normalsBuffer;
 	
@@ -54,7 +54,7 @@ class Mesh {
 		//gl.glDrawElements(GL10.GL_TRIANGLES, numOfIndices,
 		//		GL10.GL_UNSIGNED_SHORT, indicesBuffer);
 		gl.glCullFace(GL10.GL_BACK);
-		gl.glDrawElements(GL10.GL_TRIANGLES, numOfIndices,
+		gl.glDrawElements(GL10.GL_TRIANGLES, indexCount,
 				GL10.GL_UNSIGNED_SHORT, indicesBuffer);
 
 		gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
@@ -86,47 +86,28 @@ class Mesh {
 	}
 
 	private void setVertices(float[] vertices) {
-		// a float is 4 bytes, therefore we multiply the number if
-		// vertices with 4.
-		ByteBuffer vbb = ByteBuffer.allocateDirect(vertices.length * Float.SIZE / 8);
-		vbb.order(ByteOrder.nativeOrder());
-		verticesBuffer = vbb.asFloatBuffer();
-		verticesBuffer.put(vertices);
+		verticesBuffer = FloatBuffer.wrap(vertices);
 		verticesBuffer.position(0);
 	}
 
 	private void setNormals(float[] normals) {
-		// a float is 4 bytes, therefore we multiply the number if
-		// vertices with 4.
-		ByteBuffer vbb = ByteBuffer.allocateDirect(normals.length * Float.SIZE / 8);
-		vbb.order(ByteOrder.nativeOrder());
-		normalsBuffer = vbb.asFloatBuffer();
-		normalsBuffer.put(normals);
+		normalsBuffer = FloatBuffer.wrap(normals);
 		normalsBuffer.position(0);
 	}
 
 	private void setIndices(int[] indices) {
-		// short is 2 bytes, therefore we multiply the number if
-		// vertices with 2.
-		ByteBuffer ibb = ByteBuffer.allocateDirect(indices.length * Short.SIZE / 8);
-		ibb.order(ByteOrder.nativeOrder());
-		indicesBuffer = ibb.asShortBuffer();
-		
 		short[] shorts = new short[indices.length];
 		for (int i = 0; i < shorts.length; i++) {
 			shorts[i] = (short) indices[i];
 		}
-		indicesBuffer.put(shorts);
+		
+		indicesBuffer = ShortBuffer.wrap(shorts);
 		indicesBuffer.position(0);
-		numOfIndices = indices.length;
+		indexCount = shorts.length;
 	}
 
 	private void setColors(float[] colors) {
-		// float has 4 bytes.
-		ByteBuffer cbb = ByteBuffer.allocateDirect(colors.length * 4);
-		cbb.order(ByteOrder.nativeOrder());
-		colorBuffer = cbb.asFloatBuffer();
-		colorBuffer.put(colors);
+		colorBuffer = FloatBuffer.wrap(colors);
 		colorBuffer.position(0);
 	}
 
