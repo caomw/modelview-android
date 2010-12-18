@@ -55,10 +55,18 @@ public class ModelViewActivity extends Activity implements OnClickListener,
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case SHOW_LOADING_WHAT:
-				showDialog(LOADING_DIALOG);
+				try {
+					showDialog(LOADING_DIALOG);
+				} catch (WindowManager.BadTokenException e) {
+					Log.w("modelview", "couldn't show loading dialog", e);
+				}
 				break;
 			case SHOW_LOAD_ERROR_WHAT:
-				showDialog(LOAD_ERROR_DIALOG);
+				try {
+					showDialog(LOAD_ERROR_DIALOG);
+				} catch (WindowManager.BadTokenException e) {
+					Log.w("modelview", "couldn't show error dialog", e);
+				}
 				break;
 			case HIDE_LOADING_WHAT:
 				if (loadingDialog.isShowing()) {
