@@ -35,6 +35,13 @@ public class Triangle {
 		this.vertices[V3] = v3;
 	}
 
+	Triangle(Vertex v1, Vertex v2, Vertex v3, Vertex normal) {
+		this.vertices[V1] = v1;
+		this.vertices[V2] = v2;
+		this.vertices[V3] = v3;
+		this.normal = normal;
+	}
+
 	Triangle reverse() {
 		return new Triangle(vertices[V1], vertices[V3], vertices[V2]);
 	}

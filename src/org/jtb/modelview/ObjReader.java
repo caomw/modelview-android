@@ -45,6 +45,11 @@ class ObjReader extends ModelReader {
 
 			boolean backFaces = prefs.isBackFaces();
 			while ((line = br.readLine()) != null) {
+				if (line.endsWith("\\")) {
+					line = line.substring(0, line.length()-1);
+					line += br.readLine();
+				}
+
 				lineNumber++;
 				line = line.trim();
 				// skip blank lines
@@ -57,6 +62,22 @@ class ObjReader extends ModelReader {
 						|| line.startsWith("s") || line.startsWith("g")
 						|| line.startsWith("mtllib")
 						|| line.startsWith("usemtl") || line.startsWith("vt")) {
+					continue;
+				}
+				
+				
+				// parse normal
+				if (line.startsWith("vn")) {
+					StringTokenizer tok = new StringTokenizer(line);
+					tok.nextToken();
+					Vertex n = new Vertex();
+					n.vertex[X] = Float.parseFloat(tok.nextToken());
+					n.vertex[Y] = Float.parseFloat(tok.nextToken());
+					if (tok.hasMoreTokens()) {
+						n.vertex[Z] = Float.parseFloat(tok.nextToken());
+					}
+					normals.add(n);
+					Log.d("modelview", "added normal: " + n);
 					continue;
 				}
 				// parse vertex
@@ -90,20 +111,6 @@ class ObjReader extends ModelReader {
 
 					continue;
 				}
-				// parse normal
-				if (line.startsWith("vn")) {
-					StringTokenizer tok = new StringTokenizer(line);
-					tok.nextToken();
-					Vertex n = new Vertex();
-					n.vertex[X] = Float.parseFloat(tok.nextToken());
-					n.vertex[Y] = Float.parseFloat(tok.nextToken());
-					if (tok.hasMoreTokens()) {
-						n.vertex[Z] = Float.parseFloat(tok.nextToken());
-					}
-					normals.add(n);
-					continue;
-
-				}
 				// parse face
 				if (line.startsWith("f")) {
 					Matcher m = FACE_ELEMENT_PATTERN.matcher(line);
@@ -118,18 +125,21 @@ class ObjReader extends ModelReader {
 							triNormals.add(normals.get(normalPtr - 1));
 						}
 					}
-					// TODO: set parsed normals (if any) for triangle.
-					// problem is that we want one normal per triangle, 
-					// but we are parsing a normal per vertex
-					// don't know how to handle this 
-					// just pick a normal? shouldn't they all be the
-					// same for a particular face?
 					for (int i = 1; i < triVertices.size() - 1; i++) {
 						Vertex v1 = triVertices.get(0);
 						Vertex v2 = triVertices.get(i);
 						Vertex v3 = triVertices.get(i + 1);
 
-						Triangle t = new Triangle(v1, v2, v3);
+						// TODO: we potentially have normals for each
+						// vertex, but AFAIK, a normal is per-face
+						// we just pick the single normal for the first
+						// vertice here
+						Vertex normal = null;
+						if (triNormals.size() > 0) {
+							normal = triNormals.get(0);
+						}
+						Triangle t = new Triangle(v1, v2, v3, normal);
+						
 						triangles.add(t);
 						if (backFaces) {
 							triangles.add(t.reverse());
