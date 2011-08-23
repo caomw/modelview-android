@@ -5,6 +5,8 @@
 		android:icon="@android:drawable/ic_menu_help" />
 	<item android:id="@+id/report_item" android:title="Report Issue"
 		android:icon="@android:drawable/ic_menu_view" />
+	<item android:id="@+id/about_item" android:title="About"
+		android:icon="@android:drawable/ic_menu_info_details" />		
 	<item android:id="@+id/preferences_item" android:title="Preferences"
-		android:icon="@android:drawable/ic_menu_preferences" />
+		android:icon="@android:drawable/ic_menu_preferences" />		
 </menu>

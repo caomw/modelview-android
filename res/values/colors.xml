@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>    
+    <color name="row_alt">@color/darkgray</color>
+    <color name="row_main">@color/black</color>
+	<color name="model_border">@color/darkslategray</color>
+	<color name="model_header">@color/darkgray</color>
+
+
+    <color name="white">@android:color/white</color>
+    <color name="black">@android:color/black</color>
+    
+    <color name="blue">#770000FF</color>
+    <color name="darkgray">#FF222222</color>
+    <color name="darkslategray">#FF2F4F4F</color>
+</resources>

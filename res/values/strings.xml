@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">ModelView</string>
+    <string name="acknowlegements">Original application by Jeffrey Blattman\nModified by Alexandros Schillings\n\n
+    Uses icons from the Gnome Human-O2 skin and the Maliae skin.</string>
+    
+    <string name="change_log">v 1.1.4\n
+     UI: Added icons, added more information in the filelist, folders will now always appear at the top, files and folders are alpha-sorted, added infobar in modelviewer.\n
+     General: Refactored code, added intent filters for obj/off files (i.e. you can open them from a compatible file explorer), the app now also looks in the Downloads directory of the sd card for model files.</string>
+    								
+    <string name="url_help">http://code.google.com/p/modelview-android/wiki/Help</string>
+	<string name="url_home">http://code.google.com/p/modelview-android</string>
+	<string name="url_report">http://code.google.com/p/modelview-android/issues/entry</string>
 </resources>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+         android:orientation="vertical"
+         android:layout_width="fill_parent"
+         android:layout_height="fill_parent"
+         android:background="@color/model_border">
+     
+     <LinearLayout
+     	 android:layout_marginTop="2dip"
+     	 android:layout_marginLeft="2dip"
+     	 android:layout_marginRight="2dip" 	 
+         android:orientation="vertical"
+     	 android:layout_width="fill_parent"
+         android:layout_height="wrap_content"
+         android:background="@color/model_header">
+         
+	     <TextView android:id="@+id/modelInfoPath"
+	               android:layout_width="fill_parent"
+	               android:layout_height="wrap_content"
+	               android:text="Path:"
+	               android:singleLine="true"
+	               android:ellipsize="marquee"
+	               android:layout_marginLeft="2dip"/>
+	               
+	    <TextView android:id="@+id/modelInfoDate"
+	               android:layout_width="fill_parent"
+	               android:layout_height="wrap_content"
+	               android:text="Date:"
+	               android:singleLine="true"
+	               android:ellipsize="marquee"
+	               android:layout_marginLeft="2dip"/>
+     </LinearLayout>      
+     <android.opengl.GLSurfaceView android:id="@+id/modelSurfaceView"
+     			android:layout_weight="1"
+     			android:layout_height="fill_parent"
+     			android:layout_width="fill_parent"
+     			android:layout_marginTop="2dip"
+     			android:layout_marginLeft="2dip"
+     			android:layout_marginRight="2dip"
+     			android:layout_marginBottom="2dip"/>
+ </LinearLayout>
