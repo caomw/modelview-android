@@ -17,7 +17,7 @@
 	     <TextView android:id="@+id/modelInfoPath"
 	               android:layout_width="fill_parent"
 	               android:layout_height="wrap_content"
-	               android:text="Path:"
+	               android:text=""
 	               android:singleLine="true"
 	               android:ellipsize="marquee"
 	               android:layout_marginLeft="2dip"/>
@@ -25,7 +25,7 @@
 	    <TextView android:id="@+id/modelInfoDate"
 	               android:layout_width="fill_parent"
 	               android:layout_height="wrap_content"
-	               android:text="Date:"
+	               android:text=""
 	               android:singleLine="true"
 	               android:ellipsize="marquee"
 	               android:layout_marginLeft="2dip"/>

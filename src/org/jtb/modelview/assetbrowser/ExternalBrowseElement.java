@@ -51,4 +51,9 @@ public class ExternalBrowseElement extends AbstractBrowseElement {
 	public long getSize() {
 		return filePath.length();
 	}
+
+	@Override
+	public long getLastModoficationDate() {
+		return new File(path).lastModified();
+	}
 }

@@ -39,8 +39,9 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 
-public class ModelViewActivity extends Activity implements OnClickListener, View.OnTouchListener {
-	private final String TAG =  this.getClass().getName();
+public class ModelViewActivity extends Activity implements OnClickListener,
+		View.OnTouchListener {
+	private final String TAG = this.getClass().getName();
 
 	private static final float MT_THRESHOLD = 10f;
 
@@ -112,7 +113,7 @@ public class ModelViewActivity extends Activity implements OnClickListener, View
 	};
 
 	private static class ModelViewGestureDetector extends
-	SimpleOnGestureListener {
+			SimpleOnGestureListener {
 		private ModelViewActivity activity;
 
 		ModelViewGestureDetector(ModelViewActivity activity) {
@@ -120,8 +121,10 @@ public class ModelViewActivity extends Activity implements OnClickListener, View
 		}
 
 		@Override
-		public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-			activity.surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+		public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+				float velocityY) {
+			activity.surfaceView
+					.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 
 			activity.renderer.mesh.dySpeed = velocityX / 1000;
 			activity.renderer.mesh.dxSpeed = velocityY / 1000;
@@ -137,9 +140,10 @@ public class ModelViewActivity extends Activity implements OnClickListener, View
 
 		// full screen
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-		// This must be after any requestWindowFeature	
+		// This must be after any requestWindowFeature
 		Intent intent = getIntent();
 
 		String action = intent.getAction();
@@ -147,16 +151,19 @@ public class ModelViewActivity extends Activity implements OnClickListener, View
 
 		Log.d(TAG, "^ Launch action: " + action);
 
-		if((action != null) && (data != null)){
-			if(action.equals(Intent.ACTION_VIEW)){
-				browseElement = new ExternalBrowseElement(this, data.toString().replace("file:/", ""));
+		if ((action != null) && (data != null)) {
+			if (action.equals(Intent.ACTION_VIEW)) {
+				browseElement = new ExternalBrowseElement(this, data.toString()
+						.replace("file:/", ""));
 			}
 		} else {
-			browseElement = (savedInstanceState != null) ? (AbstractBrowseElement) savedInstanceState.get("browseElement") : null;
+			browseElement = (savedInstanceState != null) ? (AbstractBrowseElement) savedInstanceState
+					.get("browseElement") : null;
 		}
 		if (browseElement == null) {
 			Bundle extras = getIntent().getExtras();
-			browseElement = (extras != null) ? (AbstractBrowseElement) extras.get("browseElement") : null;
+			browseElement = (extras != null) ? (AbstractBrowseElement) extras
+					.get("browseElement") : null;
 		}
 		if (browseElement == null) {
 			Log.e(TAG, "^ browseElement is null!");
@@ -165,8 +172,9 @@ public class ModelViewActivity extends Activity implements OnClickListener, View
 		browseElement.setContext(this);
 
 		// Gesture detection
-		gestureDetector = new GestureDetector(new ModelViewGestureDetector(this));
-		optionHandler = new OptionHandler(this);		
+		gestureDetector = new GestureDetector(
+				new ModelViewGestureDetector(this));
+		optionHandler = new OptionHandler(this);
 
 		init();
 	}
@@ -178,7 +186,8 @@ public class ModelViewActivity extends Activity implements OnClickListener, View
 		new Thread(new Runnable() {
 			public void run() {
 				try {
-					renderer = new MeshRenderer(ModelViewActivity.this, browseElement);
+					renderer = new MeshRenderer(ModelViewActivity.this,
+							browseElement);
 					handler.sendEmptyMessage(PREPARE_SURFACE_WHAT);
 				} catch (ModelLoadException e) {
 					setLoadException(e);
@@ -206,8 +215,13 @@ public class ModelViewActivity extends Activity implements OnClickListener, View
 		tvInfoPath = (TextView) findViewById(R.id.modelInfoPath);
 		tvInfoDate = (TextView) findViewById(R.id.modelInfoDate);
 
-		tvInfoPath.setText("File: " + browseElement.getFullPath());
-		tvInfoDate.setText("Date: " + Helper.createDatestring(browseElement.getLastModoficationDate()));
+		tvInfoPath.setText(browseElement.getFullPath());
+		long time = browseElement.getLastModoficationDate();
+		if (time == 0) {
+			tvInfoDate.setVisibility(View.GONE);
+		} else {
+			tvInfoDate.setText(Helper.createDatestring(time));
+		}
 
 		surfaceView.setRenderer(renderer);
 		surfaceView.setSoundEffectsEnabled(false);
@@ -311,11 +325,11 @@ public class ModelViewActivity extends Activity implements OnClickListener, View
 				loadingDialog.setMessage("Loading ...");
 				loadingDialog.setIndeterminate(true);
 				loadingDialog
-				.setOnCancelListener(new DialogInterface.OnCancelListener() {
-					public void onCancel(DialogInterface dialog) {
-						finish();
-					}
-				});
+						.setOnCancelListener(new DialogInterface.OnCancelListener() {
+							public void onCancel(DialogInterface dialog) {
+								finish();
+							}
+						});
 			}
 			return loadingDialog;
 		case LOAD_ERROR_DIALOG:
@@ -326,12 +340,12 @@ public class ModelViewActivity extends Activity implements OnClickListener, View
 				builder.setMessage(loadException.getMessage());
 				builder.setNeutralButton("Back",
 						new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog,
-							int which) {
-						dismissDialog(LOAD_ERROR_DIALOG);
-						finish();
-					}
-				});
+							public void onClick(DialogInterface dialog,
+									int which) {
+								dismissDialog(LOAD_ERROR_DIALOG);
+								finish();
+							}
+						});
 
 				loadErrorDialog = builder.create();
 			}

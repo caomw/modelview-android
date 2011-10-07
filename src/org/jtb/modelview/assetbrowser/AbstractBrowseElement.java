@@ -83,9 +83,7 @@ public abstract class AbstractBrowseElement implements Serializable, Comparable<
 		return new File(path).getName();
 	}
 	
-	public long getLastModoficationDate() {
-		return new File(path).lastModified();
-	}
+	public abstract long getLastModoficationDate();
 	
 	public String getFullPath() {
 		return new File(path).getAbsolutePath();

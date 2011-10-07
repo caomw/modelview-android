@@ -49,4 +49,9 @@ public class AssetBrowseElement extends AbstractBrowseElement {
 		AssetFileDescriptor afd = context.getAssets().openFd(getPath());
 		return afd.getDeclaredLength();
 	}
+
+	@Override
+	public long getLastModoficationDate() {
+		return 0;
+	}
 }

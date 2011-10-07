@@ -44,4 +44,17 @@ public class AggregateBrowseElement extends AbstractBrowseElement {
 		throw new UnsupportedOperationException("cannnot get size of aggregate browse element");
 	}
 
+	@Override
+	public long getLastModoficationDate() {
+		long lastModified = 0;
+		for (AbstractBrowseElement be : aggregates) {
+			if (be.getLastModoficationDate() > lastModified) {
+				lastModified = be.getLastModoficationDate();
+			}
+		}
+		
+		return lastModified;
+	}
+
+	
 }
