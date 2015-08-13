@@ -1,0 +1,5 @@
+# Why Kill Permission? #
+
+ModelView requests KILL\_BACKGROUND\_PROCESSES permission. Why is this required? The short answer is that it kills off the activity process that renders the object in order to wipe the memory slate clean for next time. Without going into too many details, Android never compacts the heap, leading to eventual heap fragmentation for long-running memory hungry activities.
+
+ModelView only ever kills it's own background processes. If you have any concerns, please see [BrowseActivity.java](http://code.google.com/p/modelview-android/source/browse/trunk/src/org/jtb/modelview/BrowseActivity.java), in the onResume() method. The entire [source tree](http://code.google.com/p/modelview-android/source/browse/) is available from this project space if you have any other concerns or just want to make sure nothing funny is going on.
